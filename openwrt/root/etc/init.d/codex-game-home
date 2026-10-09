@@ -1,0 +1,27 @@
+#!/bin/sh /etc/rc.common
+START=95
+STOP=10
+USE_PROCD=1
+start_service() {
+ [ "$(jsonfilter -i /etc/codex-game/endpoint-config.json -e '@.role')" = home ] || return 0
+ portal_port="$(jsonfilter -i /etc/codex-game/endpoint-config.json -e '@.portal_port')"
+ portal_cidr="$(jsonfilter -i /etc/codex-game/endpoint-config.json -e '@.portal_cidr')"
+ rpc_port="$(uci -q get easytier_home_game.main.rpc_port)"
+ procd_open_instance core
+ procd_set_param command /usr/libexec/codex-game/easytier-core -c /etc/codex-game/home.toml --dev-name etgame --rpc-portal "127.0.0.1:$rpc_port" --vpn-portal "wg://127.0.0.1:$portal_port/$portal_cidr" --enable-exit-node true --proxy-networks 0.0.0.0/0 --proxy-forward-by-system true
+ procd_set_param respawn 3600 5 0
+ procd_set_param env LD_LIBRARY_PATH=/usr/libexec/codex-game/lib
+ procd_close_instance
+ fec="$(jsonfilter -i /etc/codex-game/endpoint-config.json -e '@.fec_data'):$(jsonfilter -i /etc/codex-game/endpoint-config.json -e '@.fec_redundant')"
+ timeout="$(jsonfilter -i /etc/codex-game/endpoint-config.json -e '@.fec_timeout')"
+ interval="$(jsonfilter -i /etc/codex-game/endpoint-config.json -e '@.fec_interval')"
+ port="$(jsonfilter -i /etc/codex-game/endpoint-config.json -e '@.fec_port')"
+ for address in $(lua /usr/libexec/codex-game/endpoint-common.lua all-addresses); do
+  instance="fec_$(printf '%s' "$address" | tr ':' '_')"
+  procd_open_instance "$instance"
+  procd_set_param command /usr/libexec/codex-game/udpspeeder -s -l "[$address]:$port" -r "127.0.0.1:$portal_port" -f "$fec" --timeout "$timeout" -i "$interval" --report 60 --log-level 3
+  procd_set_param env LD_LIBRARY_PATH=/usr/libexec/codex-game/lib
+  procd_set_param respawn 3600 5 0
+  procd_close_instance
+ done
+}

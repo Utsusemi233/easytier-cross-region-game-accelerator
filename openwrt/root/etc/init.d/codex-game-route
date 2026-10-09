@@ -1,0 +1,11 @@
+#!/bin/sh /etc/rc.common
+START=97
+STOP=9
+USE_PROCD=1
+start_service() {
+ [ "$(jsonfilter -i /etc/codex-game/endpoint-config.json -e '@.role')" = client ] || return 0
+ procd_open_instance
+ procd_set_param command /etc/codex-game/game-route-health.sh
+ procd_set_param respawn 3600 5 0
+ procd_close_instance
+}

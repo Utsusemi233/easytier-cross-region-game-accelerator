@@ -1,0 +1,12 @@
+/artifacts/
+/local/
+/node_modules/
+*.ipk
+*.apk
+*.tar.gz
+*.zip
+*.bak
+*.private.json
+*.pair.json
+*.key
+.env*

@@ -1,0 +1,9 @@
+#!/bin/sh
+lua - <<'LUA'
+for _,name in ipairs({'luci.controller.easytier_home_game','luci.model.easytier_home_game','luci.model.easytier_home_game_deploy'}) do
+ local hex=name:gsub('.',function(c) return string.format('%02X',c:byte()) end)
+ os.remove('/tmp/luci-modulecache/'..hex)
+end
+os.remove('/tmp/luci-indexcache')
+LUA
+exit 0

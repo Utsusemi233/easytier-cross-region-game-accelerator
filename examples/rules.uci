@@ -1,0 +1,8 @@
+# Example addresses are reserved for documentation and are not live game targets.
+config rule 'example_game'
+ option label 'Example game server'
+ option enabled '0'
+ option source '192.168.50.10/32'
+ option destination '203.0.113.42/32'
+ option protocol 'udp'
+ option ports '30000-30100'

@@ -1,0 +1,10 @@
+config gateway 'main'
+ option role 'home'
+ option mode 'managed'
+ option enabled '1'
+ option peer_node '9876543210'
+ option local_zt '192.168.196.1'
+ option peer_zt '192.168.196.2'
+ option zt_interface 'ztYOURNETWORK'
+ option peer_mac '02:00:00:00:00:02'
+# Fill matching FEC parameters on both sides. A public relay is not a home Internet exit.

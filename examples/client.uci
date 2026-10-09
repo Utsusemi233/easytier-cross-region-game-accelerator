@@ -1,0 +1,16 @@
+# Merge these fields into /etc/config/easytier_home_game; do not paste real keys in Git.
+config gateway 'main'
+ option role 'client'
+ option mode 'managed'
+ option enabled '1'
+ option game_network 'game'
+ option game_device 'br-game'
+ option game_cidr '192.168.50.0/24'
+ option peer_node '0123456789'
+ option local_zt '192.168.196.2'
+ option peer_zt '192.168.196.1'
+ option zt_interface 'ztYOURNETWORK'
+ option peer_mac '02:00:00:00:00:01'
+ option home_ipv6 '2001:db8:3:4::1'
+# Documentation IPv6 is deliberately unroutable. Replace with your actual known home address.
+# Import a private pairing profile before apply; defaults are filled by the manager.

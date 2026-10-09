@@ -1,0 +1,14 @@
+EasyTier Home Game Gateway extension
+Copyright 2026 the project contributors.
+
+This project adds deployment, detection, selective routing and a LuCI child
+page to the existing EasyTier OpenWrt integration. It is not an official
+EasyTier release or a complete replacement management interface.
+
+Upstream menu/API layout and visual conventions were reviewed against
+EasyTier/luci-app-easytier, Apache-2.0, commit
+79b2b01ded627a634e4bea8d60c7be0f00b708b0.
+
+EasyTier, WireGuard, UDPspeeder and ZeroTier are independent dependencies
+with their respective upstream copyright and licensing. Their algorithms
+and binaries are not relicensed or bundled here.

@@ -1,0 +1,53 @@
+<%+header%>
+<link rel="stylesheet" href="<%=resource%>/easytier/home-game.css?v=20261009-5">
+<div class="cbi-map etgame-panel" id="etgame-app" data-base="<%=luci.dispatcher.build_url('admin','vpn','easytier')%>" data-token="<%=luci.dispatcher.context.authtoken%>">
+ <h2>跨地区游戏加速</h2>
+ <div class="cbi-map-descr">通过家庭宽带出口转发选定流量。保存、规则加载和实际命中分别核验。</div>
+ <ul class="cbi-tabmenu etg-tabs" role="tablist" aria-label="家庭线路管理">
+  <li class="cbi-tab"><a id="tab-overview" href="#overview" role="tab" aria-controls="panel-overview" aria-selected="true">运行状态</a></li>
+  <li class="cbi-tab-disabled"><a id="tab-rules" href="#rules" role="tab" aria-controls="panel-rules" aria-selected="false" tabindex="-1">加速规则</a></li>
+  <li class="cbi-tab-disabled"><a id="tab-settings" href="#settings" role="tab" aria-controls="panel-settings" aria-selected="false" tabindex="-1">线路设置</a></li>
+  <li class="cbi-tab-disabled"><a id="tab-diagnostics" href="#diagnostics" role="tab" aria-controls="panel-diagnostics" aria-selected="false" tabindex="-1">诊断</a></li>
+ </ul>
+ <div id="etgame-connection-error" class="etg-notice etg-error" role="alert" hidden><span id="etgame-connection-text"></span> <button type="button" class="cbi-button" id="etgame-retry">重新读取</button></div>
+ <div id="etgame-feedback" class="etg-notice" role="status" aria-live="polite" aria-atomic="true" tabindex="-1" hidden><strong id="etgame-operation"></strong><span id="etgame-message"></span></div>
+ <div id="etgame-errors" class="etg-notice etg-error" tabindex="-1" role="alert" hidden><h3>请检查以下内容</h3><ul id="etgame-error-list"></ul></div>
+ <div id="panel-overview" role="tabpanel" aria-labelledby="tab-overview">
+  <section class="cbi-section">
+   <div class="etg-section-head"><h3>线路运行</h3><span id="etgame-badge" class="etg-status">正在读取…</span></div>
+   <div class="etg-status-grid">
+    <div class="cbi-value"><div class="cbi-value-title">当前出口</div><div class="cbi-value-field"><strong id="etgame-route">正在读取…</strong><div class="cbi-value-description" id="etgame-proof">读取当前验证结果</div></div></div>
+    <div class="cbi-value"><div class="cbi-value-title">加速范围</div><div class="cbi-value-field"><span id="etgame-scope">—</span><div class="cbi-value-description">由加速规则选择设备和目的地址</div></div></div>
+    <div class="cbi-value"><div class="cbi-value-title">隧道探测</div><div class="cbi-value-field"><strong id="etgame-rtt">—</strong><div class="cbi-value-description" id="etgame-loss">这是隧道探测值，游戏内延迟另测</div></div></div>
+    <div class="cbi-value"><div class="cbi-value-title">UDP 纠错</div><div class="cbi-value-field"><span id="etgame-fec">—</span><div class="cbi-value-description" id="etgame-cost">正在读取参数…</div></div></div>
+   </div>
+   <div class="etg-evidence" id="etgame-evidence"></div>
+   <div class="etg-actions"><button type="button" data-action="verify" class="cbi-button cbi-button-action">验证当前线路</button><button type="button" id="etgame-route-toggle" class="cbi-button" data-action="pause">暂停家庭分流</button></div>
+   <p class="cbi-value-description" id="etgame-runtime-help">家庭出口通过当前验证后，选定流量才使用家庭线路。</p>
+  </section>
+ </div>
+ <div id="panel-rules" role="tabpanel" aria-labelledby="tab-rules" hidden>
+  <section class="cbi-section">
+   <div class="etg-section-head"><h3>加速规则</h3><button type="button" id="etgame-add-rule" class="cbi-button cbi-button-add">添加规则</button></div>
+   <p>按设备、目的 IPv4 地址和端口选择家庭出口。计数来自实际防火墙规则；无命中时不会宣称已加速。</p>
+   <p id="etgame-legacy" class="cbi-value-description"></p>
+   <table class="table cbi-section-table etg-rule-table" id="etgame-rules"><thead><tr><th scope="col">规则</th><th scope="col">设备范围</th><th scope="col">目的地址 / 协议</th><th scope="col">运行证据</th><th scope="col">操作</th></tr></thead><tbody></tbody></table>
+   <div id="etgame-undo" class="etg-actions" hidden><span id="etgame-undo-text"></span><button type="button" class="cbi-button" id="etgame-undo-delete">撤销删除</button></div>
+   <p class="cbi-value-description">计数自上次应用或防火墙重载起累计。命中说明条件匹配，实际效果还需在应用中对照；当前仅支持目的 IPv4，不自动识别软件或域名。</p>
+  </section>
+  <section class="cbi-section etg-editor" id="etgame-editor" hidden><h3 id="etgame-editor-title">添加规则</h3><div id="etgame-rule-fields"></div><div class="etg-actions"><button type="button" class="cbi-button cbi-button-action" id="etgame-rule-done">完成编辑</button><button type="button" class="cbi-button" id="etgame-rule-cancel">取消编辑</button></div><p class="cbi-value-description">完成编辑后仍是草稿；点击页面下方“保存并应用”才会修改运行规则。</p></section>
+ </div>
+ <div id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>
+  <section class="cbi-section"><h3>线路设置</h3><div id="etgame-fields"></div></section>
+  <section class="cbi-section"><h3>UDP 纠错</h3><div id="etgame-fec-fields"></div><label class="etg-check-label" for="etgame-high-fec"><input type="checkbox" id="etgame-high-fec" name="allow_high_fec">我了解高冗余的带宽成本；修改纠错参数前，需要确保家庭端和海外端一致。</label><p class="cbi-value-description">修改本端不会自动修改对端。保留现有成功参数，先做对照再调整。</p></section>
+  <section class="cbi-section"><details><summary>高级接口、端点和检测参数</summary><div id="etgame-advanced"></div><p class="cbi-value-description">接管模式的既有角色、内层网段与端口保持固定；迁移需另行检查。</p></details></section>
+  <section class="cbi-section"><h3>两端配对</h3><p>配对文件含客户端私钥，只在自己管理的两端传递。</p><div id="etgame-export-area" hidden><button type="button" class="cbi-button" id="etgame-export">导出私有配对文件</button></div><div id="etgame-import-area" hidden><label for="etgame-profile">家庭端提供的配对文件</label><input type="file" accept="application/json,.json" name="pair_profile" id="etgame-profile"><button type="button" class="cbi-button" id="etgame-import">导入配对文件</button><p class="cbi-value-description">导入后仍需检查客户端地址，再保存并应用。</p></div></section>
+ </div>
+ <div id="panel-diagnostics" role="tabpanel" aria-labelledby="tab-diagnostics" hidden>
+  <section class="cbi-section"><h3>检查与维护</h3><div class="etg-actions"><button type="button" data-action="doctor" class="cbi-button">检查部署条件</button><button type="button" data-action="verify" class="cbi-button cbi-button-action">验证当前线路</button><button type="button" data-action="plan" class="cbi-button">查看应用计划</button><button type="button" data-action="backup" class="cbi-button">创建配置备份</button></div><div id="etgame-checks"></div><div id="etgame-plan" hidden></div><details><summary>现有线路接管</summary><p>仅用于同步已经运行的原型参数。此操作不重新生成隧道身份。</p><button type="button" data-action="adopt" class="cbi-button">同步现有线路配置</button></details><details><summary>当前地址与原始检查结果</summary><pre id="etgame-detail">尚未读取</pre></details></section>
+  <section class="cbi-section"><h3>最近操作</h3><ol id="etgame-history"><li>本次打开尚未执行操作。</li></ol></section>
+ </div>
+ <div class="cbi-page-actions etg-save-bar"><span id="etgame-pending" role="status" aria-live="polite">正在读取配置…</span><div class="etg-actions"><button type="button" id="etgame-save" class="cbi-button cbi-button-save">仅保存</button><button type="button" id="etgame-save-apply" class="cbi-button cbi-button-action">保存并应用</button></div></div>
+</div>
+<script type="text/javascript" src="<%=resource%>/easytier/home-game.js?v=20261009-5"></script>
+<%+footer%>

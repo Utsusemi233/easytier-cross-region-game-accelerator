@@ -1,0 +1,97 @@
+/* LuCI resource path; the active theme owns typography and base colors. */
+.etgame-panel { --etg-primary: var(--primary, #5e72e4); min-width: 0; }
+.etgame-panel [hidden] { display: none !important; }
+.etgame-panel p { line-height: 1.6; }
+.etgame-panel .cbi-section { padding: 20px; }
+.etgame-panel .cbi-map-descr, .etgame-panel .etg-tabs { margin-bottom: 20px; }
+.etgame-panel .etg-tabs a { min-height: 44px; display: inline-flex; align-items: center; }
+.etg-section-head, .etg-actions, .etg-save-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.etg-section-head { justify-content: space-between; margin-bottom: 16px; }
+.etgame-panel .etg-section-head h3 { margin: 0; width: auto; flex: 1; }
+.etg-actions { margin: 16px 0; }
+.etg-status-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.etgame-panel .etg-status-grid .cbi-value { display: flex; min-width: 0; padding: 16px 0; align-items: flex-start; }
+.etgame-panel .etg-status-grid .cbi-value-title { flex: 0 0 110px; width: 110px; padding-right: 16px; }
+.etgame-panel .etg-status-grid .cbi-value-field { margin: 0; flex: 1; min-width: 0; }
+.etgame-panel .etg-status-grid .cbi-value-description { margin: 6px 0 0; padding: 0; }
+.etgame-panel .etg-field.cbi-value { display: flex; align-items: flex-start; margin-bottom: 16px; }
+.etgame-panel .etg-field .cbi-value-title { flex: 0 0 210px; width: 210px; padding-top: 10px; padding-right: 20px; }
+.etgame-panel .etg-field .cbi-value-field { margin: 0; flex: 1; max-width: 580px; min-width: 0; }
+.etg-field input:not([type=checkbox]), .etg-field select { width: 100%; min-height: 40px; box-sizing: border-box; }
+.etg-field input[readonly], .etg-field select:disabled { opacity: .8; }
+.etgame-panel .cbi-button { min-height: 40px; margin: 0; padding: 8px 16px; cursor: pointer; touch-action: manipulation; }
+.etgame-panel .cbi-button:not(.cbi-button-action):not(.cbi-button-save):not(.cbi-button-add) { background: transparent; border: 1px solid #8898aa; color: inherit; }
+.etgame-panel .cbi-button:not(:disabled):hover { filter: brightness(.94); }
+.etgame-panel .cbi-button:disabled { opacity: .55; cursor: not-allowed; }
+.etgame-panel :focus-visible { outline: 2px solid var(--etg-primary); outline-offset: 3px; }
+.etgame-panel input, .etgame-panel select, .etgame-panel button { font-family: inherit; }
+.etg-status { display: inline-block; font-size: 13px; border-radius: 4px; padding: 5px 9px; line-height: 1.5; }
+.etg-status.good { background: #e3f6eb; color: #145c35; }
+.etg-status.warning { background: #fff3d6; color: #805400; }
+.etg-status.bad { background: #ffeded; color: #a42c2c; }
+.etg-status.neutral { background: #edf2f8; color: #335373; }
+.etg-evidence { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+.etg-notice { padding: 14px 18px; border-left: 4px solid var(--etg-primary); background: #edf2f8; color: #213c55; margin: 16px 0; line-height: 1.6; overflow-wrap: anywhere; }
+.etg-notice strong { display: block; }
+.etg-notice.etg-success { background: #e3f6eb; color: #145c35; border-color: #238652; }
+.etg-notice.etg-warning { background: #fff3d6; color: #805400; border-color: #b37a14; }
+.etg-notice.etg-error { background: #ffeded; color: #a42c2c; border-color: #c24040; }
+.etg-notice h3 { margin: 0; }
+.etg-notice a { color: inherit; text-decoration: underline; }
+.etg-rule-table { width: 100%; table-layout: fixed; }
+.etg-rule-table th:first-child { width: 20%; }
+.etg-rule-table th:nth-child(2) { width: 16%; }
+.etg-rule-table th:nth-child(3) { width: 25%; }
+.etg-rule-table th:nth-child(4) { width: 25%; }
+.etg-rule-table th:last-child { width: 14%; }
+.etg-rule-table td { overflow-wrap: anywhere; vertical-align: top; padding: 14px 10px; }
+.etg-rule-table .etg-actions { gap: 8px; margin: 0; }
+.etg-rule-table .cbi-button { padding: 7px 10px; }
+.etg-rule-table .etg-number { display: block; margin-top: 7px; }
+.etg-number { font-variant-numeric: tabular-nums; }
+.etg-rule-name { display: block; font-weight: 600; margin: 0 0 8px; }
+.etg-check-label { display: flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; line-height: 1.6; }
+.etg-check-label input { flex: 0 0 auto; }
+.etg-inline-error { display: block; color: #b42318; margin-top: 7px; line-height: 1.5; }
+.etgame-panel [aria-invalid=true] { border-color: #b42318; }
+.etgame-panel details { margin-top: 20px; }
+.etgame-panel summary { cursor: pointer; min-height: 44px; line-height: 44px; font-weight: 600; }
+.etgame-panel pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 400px; overflow: auto; }
+.etg-check { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #d8dee5; align-items: flex-start; }
+.etg-check .etg-status { flex: 0 0 auto; }
+.etg-save-bar { justify-content: space-between; margin-top: 24px; padding: 16px 0; text-align: left; }
+.etg-save-bar .etg-actions { margin: 0; }
+.etg-save-bar > span { flex: 1; min-width: 180px; }
+#etgame-history { padding-left: 22px; line-height: 1.8; }
+#etgame-history li { margin-bottom: 10px; }
+#etgame-import-area { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+#etgame-import-area .cbi-value-description { flex-basis: 100%; }
+@media (max-width: 1000px) {
+ .etg-status-grid { grid-template-columns: 1fr; }
+ .etg-rule-table th:last-child { width: 18%; }
+ .etg-rule-table th:nth-child(4) { width: 21%; }
+ .etgame-panel .etg-field .cbi-value-title { flex-basis: 170px; width: 170px; }
+}
+@media (max-width: 600px) {
+ .etgame-panel .cbi-section { padding: 16px; }
+ .etgame-panel .etg-field.cbi-value { display: block; }
+ .etgame-panel .etg-field .cbi-value-title { display: block; width: auto; padding: 0 0 8px; }
+ .etgame-panel .etg-field .cbi-value-field { margin: 0; max-width: none; }
+ .etg-field input:not([type=checkbox]), .etg-field select { min-height: 44px; font-size: 16px; }
+ .etgame-panel .cbi-button { min-height: 44px; }
+ .etg-rule-table, .etg-rule-table tbody, .etg-rule-table tr, .etg-rule-table td { display: block; width: auto; }
+ .etg-rule-table thead { display: none; }
+ .etg-rule-table tr { border-bottom: 1px solid #d8dee5; padding: 12px 0; }
+ .etg-rule-table td { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 8px; padding: 8px 0; text-align: left !important; }
+ .etg-rule-table td::before { content: attr(data-label); font-weight: 600; grid-column: 1; grid-row: 1; }
+ .etg-rule-table td > * { grid-column: 2; }
+ .etg-rule-table td[colspan] { display: block; }
+ .etg-rule-table td[colspan]::before { content: none; }
+ .etg-section-head { gap: 10px; }
+ .etg-save-bar .etg-actions { width: 100%; }
+ .etg-save-bar .etg-actions button { flex: 1; }
+ .etg-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; }
+ .etgame-panel .etg-tabs li { margin: 0; text-align: center; min-width: 0; }
+ .etgame-panel .etg-tabs a { display: flex; justify-content: center; }
+ .etg-notice { padding: 12px; }
+}

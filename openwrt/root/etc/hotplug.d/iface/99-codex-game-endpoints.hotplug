@@ -1,0 +1,4 @@
+#!/bin/sh
+case "$ACTION" in ifup|ifupdate|ifdown) ;; *) exit 0;; esac
+case "$INTERFACE" in wan|wan6|zerotier) ;; *) exit 0;; esac
+printf '%s:%s:%s\n' "$INTERFACE" "$ACTION" "$$" >/var/run/codex-game-endpoint-wake
