@@ -1,23 +1,23 @@
-# 交给电脑独立接入部署的 AI
+# 交给官方电脑客户端部署的 AI
 
 下面以 Windows 电脑连接国内授权出口为例。提示词不包含出口密钥；使用者须另外通过私人文件或可信渠道提供连接资料，不要上传到公共仓库或直接贴进公共Issue。
 
-此入口使用官方 EasyTier 电脑客户端，不要求本地有 OpenWrt。出口必须提供匹配的原生 EasyTier 服务与互联网转发；OpenWrt 网关统一分流的部署走[网关部署文档](DEPLOY.md)。
+先选择电脑直接连接原生出口，或接入已有 OpenWrt 纠错网关。直接路径不要求本地 OpenWrt；已有网关路径需要匹配入口与新增来源的分类/返程。OpenWrt 主部署仍走[网关部署文档](DEPLOY.md)。
 
 ```text
-请阅读 https://github.com/Utsusemi233/easytier-cross-region-game-accelerator 的AGENTS.md、README.md、docs/WINDOWS-TRAVEL.md和兼容性说明，在这台Windows电脑的独立目录安装并配置官方EasyTier客户端，让我无需手填网络设置，并通过匹配的原生入口连接到我已有的国内授权出口。本机独立接入，不要求本地有OpenWrt；不要重做已经运行的出口或网关部署，不影响现有游戏线路。先核对出口的实际平台和协议；仓库的OpenWrt自动部署步骤不直接适用于Linux主机或NAS。
+请阅读 https://github.com/Utsusemi233/easytier-cross-region-game-accelerator 的AGENTS.md、README.md、docs/WINDOWS-TRAVEL.md和兼容性说明。先确认我选的是电脑直连原生出口，还是电脑接入已有OpenWrt纠错网关；后者再读docs/NATIVE-GATEWAY.md和docs/DEPLOYMENT-LESSONS.md。在这台Windows电脑的独立目录安装并配置官方EasyTier，让我不用手填参数。保留已有效的两端线路，检查实际平台和协议；OpenWrt自动部署步骤不直接用于电脑、Linux主机或NAS。新增原生桥接是手工集成参考，不声称安装脚本会自动完成。
 
 我会私下提供授权出口的原生EasyTier连接资料（网络名称、network_secret、出口虚拟IPv4、可用入口及共享发现节点），或让你从我授权的已配置电脑读取。路由器的WireGuard配对JSON不能直接当作EasyTier原生配置。
 
 请先检查本机系统/架构、管理员权限、已有VPN、网卡、路由及服务，从官网选择与出口端兼容的官方 EasyTier GUI 发布版并校验官方 SHA-256。使用本机独立安装目录，把桌面快捷方式直接指向官方 easytier-gui.exe，通过官方界面导入和保存私人配置。不要制作自定义连接界面、替代程序或连接脚本快捷方式。
 
-为新电脑生成独立instance_id、hostname，确认并分配未占用的虚拟IPv4；不要照搬另一台电脑的地址、instance_id或WireGuard私钥。不要自行新建与授权出口不一致的network_name/network_secret。
+同一EasyTier私网使用一致的network_name/network_secret。在匹配的2.6.4配置中，优先省略instance_id/ipv4并设置dhcp=true，让官方程序自动生成本地实例标识和分配未冲突虚拟IPv4。多台获授权电脑可导入同一份已填好的私人配置，不要求我手填独立身份或地址。先确认入口在线，分配后读回实际地址。不要把原电脑固定地址恢复文件作为多机模板，也不要复制WireGuard/ZeroTier整机身份。
 
-配置授权exit node和国内IPv4分流；如使用APNIC中国地址记录，说明它不等于应用自动识别。保留海外流量、原DNS、原IPv6和其他VPN。先用少量真实目标验证，再启用完整范围。不得仅凭进程或“已连接”认定成功；查看peer路径，分别记录公网直连或经中继。
+直连模式配置授权exit node和选定IPv4范围。接已有网关模式由客户端把IPv4交给网关，再复用已有目标/UDP分类、策略路由和源NAT，其余在网关走当地出口。先检查原集合、端口排除、WG允许的来源、DNS重定向与重载恢复；特定App TCP/DNS规则不自动全部继承。TOML字段是routes；若采用两段/1，必须检查底层承载有绕行路线。区域IPv4分配记录不是应用自动识别。保留原DNS/IPv6和无关VPN，先验证真实目标，再启用实际所需范围。
 
 在必要的Windows管理员确认后自动完成配置，用官方客户端的运行、停止和托盘入口操作；如启用开机恢复，使用官方服务模式并验证。记录修改前后配置并准备仅撤销自身更改的恢复方式。不要未经检查修改出口端原有服务、无线、纠错参数或系统默认路由。
 
-验证授权出口peer可见、实际TUN路由、绑定隧道的HTTPS、授权出口的公网IPv4、普通海外网站、停止后路由释放和再启动恢复。能实测换网络时再验证地址变化；没有热点/酒店或IPv4-only条件时写未测试。原生EasyTier不含UDPspeeder纠错，不承诺达到路由器案例的游戏延迟。
+验证peer、实际TUN路线、真实场景UDP、网关规则与双向NAT、选定出口HTTPS和普通网络。直接原生路径不自带UDPspeeder；已有网关模式复用路由器FEC后端。公网地址变化由已部署的路由器端点模块处理，客户端DHCP是另外一项功能。验证停用释放、重开和防火墙重载；另一台实体机器、热点/酒店、IPv4-only和整体换前缀没有条件时标未测试。两实例无TUN检查只验地址分配。不要从“已连接”或一条登录TCP推断实际场景已加速，也不承诺固定延迟。
 
 完成后告诉我安装路径、日常连接方法、通过/失败/未测试项目，以及本机恢复方法。密钥和私人连接资料禁止写入GitHub、公开报告或诊断截图。
 ```

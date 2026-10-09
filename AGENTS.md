@@ -6,6 +6,8 @@ Read `README.md`, `docs/DEPLOY.md`, `docs/COMPATIBILITY.md`, and `docs/ACCEPTANC
 
 - The main mode is an OpenWrt access gateway that routes selected traffic from devices on its accelerated network through an authorized regional exit. The current gateway scripts deploy an fw4 OpenWrt access side and an fw3 OpenWrt exit side; this implementation scope does not define every possible exit platform.
 - An independent computer uses the official EasyTier client and its own native connection profile. Read `docs/WINDOWS-TRAVEL.md` and `docs/PORTABLE-AI-PROMPT.md`; do not run the router installation workflow on a PC. The exit must expose a matching native EasyTier entry. A WireGuard pairing export is not a native EasyTier profile, and native PC access does not automatically include UDPspeeder FEC.
+- A computer can also connect to a native entry on an existing OpenWrt policy gateway and reuse that gateway's FEC backend. Read `docs/NATIVE-GATEWAY.md` and `docs/DEPLOYMENT-LESSONS.md`. This version supplies reference templates and manual integration steps; `scripts/install.sh` does not deploy that bridge automatically. Inspect the existing classifier, underlay exclusions, policy table, forward/NAT and reload lifecycle before changing them.
+- Nodes in the same EasyTier network share its name/secret. The 2.6.4 reference client can omit `instance_id`/`ipv4` and use `dhcp=true`; do not ask users to hand-fill separate accounts or addresses. Verify assigned addresses, and do not clone a fixed-address restore profile or a router's WireGuard/ZeroTier device identity.
 - Linux hosts and suitable NAS devices are possible exit platforms with separately configured services and forwarding. This repository does not currently automate or claim acceptance for those deployments. Distinguish the exit host from the application server, and report direct versus relayed paths accurately.
 
 ## OpenWrt gateway workflow
@@ -20,6 +22,7 @@ Read `README.md`, `docs/DEPLOY.md`, `docs/COMPATIBILITY.md`, and `docs/ACCEPTANC
 ## Commands and checks
 
 - Local source checks: `node tests/check-source.mjs`.
+- Hotplug checks: `sh tests/endpoint-hotplug.sh`; these redirect the wake file to a temporary directory and mock UCI, without changing a live network. Check the TOML examples with the matching official 2.6.4 binary's `--check-config`; this validates parsing, not actual routing or deployment.
 - Device tests: `lua /usr/libexec/codex-game/test-endpoint-common.lua`; `et-game doctor`; `et-game verify`.
 - Read-only diagnostics precede mutations. Changes must have a concrete plan and a backup; restore only files/rules owned by this project.
 - Use Lua 5.1, BusyBox POSIX shell, and ES5 browser JavaScript in the LuCI extension. Follow the upstream Lua controller / template approach; do not introduce React/Vue or a second web server.
@@ -30,3 +33,7 @@ Read `README.md`, `docs/DEPLOY.md`, `docs/COMPATIBILITY.md`, and `docs/ACCEPTANC
 ## First-version limits
 
 The current scripts target an fw4 client and an fw3 exit gateway, using EasyTier 2.4.5 reference interfaces and UDPspeeder V2. Every actual firmware, architecture and installation must be checked independently before being labelled verified. The current automatic native IPv6 discovery also depends on ZeroTier; public EasyTier relay nodes do not automatically provide authorized Internet exit service. Never publish an owner's addresses, identities, screenshots with live data, or personal measurement records. Public screenshots use clearly labelled demonstration data.
+
+## Writing
+
+Use `academic-humanizer` when available to review repository prose. Keep technical terms, references and numbers, use direct sentences, and match claims to evidence. The skill is an editing aid, not a runtime dependency. Do not turn configuration examples, temporary probes or an owner's measurements into general performance guarantees; keep missing acceptance checks explicit.

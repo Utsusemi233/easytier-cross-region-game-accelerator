@@ -2,7 +2,9 @@
 
 本文覆盖当前自动部署脚本：本地 OpenWrt 接入端负责接入网络内选定流量的分流，目标地区的 OpenWrt 出口端负责隧道接入和互联网转发。两台 OpenWrt 是这条部署路径的要求。
 
-电脑独立接入使用官方 EasyTier 客户端，按[电脑接入说明](WINDOWS-TRAVEL.md)和[AI 部署提示词](PORTABLE-AI-PROMPT.md)配置。Linux 主机或 NAS 出口需另行部署匹配的服务与转发，本文的 UCI、LuCI 和 `et-game` 步骤不能直接用于这些设备。
+电脑独立接入使用官方 EasyTier 客户端，按[电脑接入说明](WINDOWS-TRAVEL.md)和[AI 部署提示词](PORTABLE-AI-PROMPT.md)配置。电脑要复用已经工作的路由器纠错线路，另读[原生网关接入](NATIVE-GATEWAY.md)。Linux 主机或 NAS 出口需另行部署匹配的服务与转发，本文的 UCI、LuCI 和 `et-game` 步骤不能直接用于这些设备。
+
+部署失败时从[问题与处理](DEPLOYMENT-LESSONS.md)找对应层：入口连通、系统路由、真实场景 UDP、分类标记、源 NAT、DNS/IPv6，再到端点恢复。该说明整理可复查的机制，不包含个人网络资料或测速数据。
 
 ## 先检查
 
@@ -72,3 +74,5 @@ FEC必须两端匹配。高冗余先确认带宽成本；改本地不会自动�
 `et-game status`读取状态；`et-game doctor`检查依赖与配置；`et-game verify`主动验证；`et-game pause`暂停家庭分流；`et-game resume`重新验证后恢复；`et-game backup`保存本项目所管理文件；`et-game rollback BACKUP_ID`按备份恢复自身文件，不覆盖其他人后来修改的整个firewall/network配置。
 
 动态发现没有新路径、WAN6没有全球地址、HTTPS出口验证失败或验证过期时，应清楚显示失败并使用本地出口。额外远端入口、纯IPv4回落、整机重启后的真实新前缀恢复均需另外验证。
+
+热插拔通知匹配常用 WAN 名称、配置中的自定义 WAN/WAN6 名称及 ZeroTier `zt*` 设备。自定义 ZeroTier UCI 名称也可在设备事件中唤醒检测；5 秒轮询仍作兜底。它只通知检测，不直接把未经验证的新地址标为可用。

@@ -1,0 +1,33 @@
+# Private LAN entry in front of an EXISTING OpenWrt FEC gateway. Example values only.
+# Pair with native-client.auto.toml; kernel forwarding/rules/NAT are configured separately.
+hostname = "RegionalGateway"
+ipv4 = "10.77.90.1/24"
+dhcp = false
+listeners = ["udp://192.168.8.1:21121", "tcp://192.168.8.1:21121"]
+rpc_portal = "127.0.0.1:15911"
+routes = ["10.77.90.0/24"]
+
+[network_identity]
+network_name = "cross-region-example"
+network_secret = "REPLACE_WITH_YOUR_OWN_SHARED_SECRET"
+
+[[proxy_network]]
+cidr = "0.0.0.0/0"
+
+[flags]
+dev_name = "etnative"
+mtu = 1200
+enable_ipv6 = true
+enable_encryption = true
+default_protocol = "udp"
+latency_first = true
+private_mode = true
+foreign_network_whitelist = ""
+enable_exit_node = true
+proxy_forward_by_system = true
+bind_device = false
+disable_p2p = true
+disable_udp_hole_punching = true
+disable_sym_hole_punching = true
+enable_kcp_proxy = false
+use_smoltcp = false

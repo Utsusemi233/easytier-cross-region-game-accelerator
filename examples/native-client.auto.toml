@@ -1,0 +1,32 @@
+# EasyTier 2.6.4 reference. Replace the shared secret and private entry on BOTH sides.
+# This profile sends IPv4 to an existing policy gateway; it is not a direct home exit.
+# No fixed ipv4/instance_id: authorized clients may reuse this file with DHCP.
+hostname = "TravelClient"
+dhcp = true
+listeners = []
+exit_nodes = ["10.77.90.1"]
+routes = ["10.77.90.0/24", "0.0.0.0/1", "128.0.0.0/1"]
+rpc_portal = "127.0.0.1:15910"
+
+[network_identity]
+network_name = "cross-region-example"
+network_secret = "REPLACE_WITH_YOUR_OWN_SHARED_SECRET"
+
+[[peer]]
+uri = "udp://192.168.8.1:21121"
+
+[flags]
+dev_name = "EasyTierTravel"
+mtu = 1200
+enable_ipv6 = true
+enable_encryption = true
+default_protocol = "udp"
+latency_first = true
+private_mode = true
+foreign_network_whitelist = ""
+bind_device = false
+disable_p2p = true
+disable_udp_hole_punching = true
+disable_sym_hole_punching = true
+enable_kcp_proxy = false
+use_smoltcp = false

@@ -1,4 +1,4 @@
-# EasyTier Cross-Region Game Accelerator — User Guide
+# EasyTier Cross-Region Game Accelerator: User Guide
 
 **An EasyTier-based cross-region game access toolkit focused on OpenWrt gateway routing.**
 
@@ -10,7 +10,7 @@ Send selected local game or application traffic through a tunnel to an authorize
 
 The main mode uses a local OpenWrt router to manage selected traffic from devices on its accelerated network. It integrates EasyTier, WireGuard, UDPspeeder forward error correction, selective routing, endpoint discovery, and a LuCI management page. Devices using that network share the gateway connection without installing their own tunnel clients; unselected traffic keeps its local route.
 
-A computer can also use the official EasyTier client to access a matching native exit entry independently of the local router. This repository provides configuration and AI deployment guidance for that mode. Native computer access does not automatically include the gateway's UDPspeeder FEC path.
+A computer can also use the official EasyTier client to access a matching native exit entry independently of the local router. This repository provides configuration and AI deployment guidance for that mode. Native computer access does not automatically include the gateway's UDPspeeder FEC path. A computer can instead connect to a native entry on an existing OpenWrt policy gateway and reuse its working backend. Reference profiles and manual integration steps are provided; the installer does not deploy that bridge automatically.
 
 It is not limited to connecting to China. Choose an authorized exit in a region appropriate for the application. A shorter or more reliable route may help, but an extra tunnel can also make a connection slower. Measure your own connection before keeping a rule enabled.
 
@@ -22,6 +22,7 @@ This is a source preview, not a hosted VPN service. No public exit is included. 
 | --- | --- | --- |
 | OpenWrt gateway, the main mode | Selected devices and destinations within the accelerated network | LuCI controls, gateway deployment, WireGuard + UDPspeeder FEC, endpoint updates, and exit verification |
 | Independent computer client | Traffic from that computer, according to its native client routes | Official EasyTier GUI setup and AI instructions, with separate acceptance checks |
+| Computer through an existing FEC gateway | IPv4 handed to the gateway, which selects regional or local forwarding | Automatic-address client and native-gateway templates, manual routing/NAT integration, and acceptance steps |
 
 The exit receives tunnel traffic and forwards it through the target region's Internet connection. Compatible routers, Linux hosts, or suitable NAS devices can perform that role with separately configured services and forwarding. The current automated gateway deployment targets an OpenWrt access side and an OpenWrt exit side, with these requirements:
 
@@ -34,7 +35,7 @@ The exit receives tunnel traffic and forwards it through the target region's Int
 
 See [compatibility](COMPATIBILITY.md). Other firewall combinations, architectures, IPv4-only FEC transport, complete prefix changes, and multiple access routers need separate adaptation and acceptance checks. Do not install another firmware's kernel modules merely because a package name matches.
 
-Independent computer access requires its own identity, unused virtual address, matching native EasyTier exit entry, and route configuration. It does not require a local OpenWrt router. A reachable public address can provide a direct connection, but the actual peer path must distinguish direct access from relay transport. Public IPv4 behind an upstream router needs the appropriate UDP port mapping; IPv6 access needs a reachable global address on the exit host and matching firewall rules.
+Independent computer access requires shared private-network credentials, an unused virtual address, a matching native EasyTier exit entry, and route configuration. DHCP can allocate the address, and the official program can generate the local instance identifier. Direct access does not require a local OpenWrt router. A reachable public address can provide a direct connection, but the actual peer path must distinguish direct access from relay transport. Public IPv4 behind an upstream router needs the appropriate UDP port mapping; IPv6 access needs a reachable global address on the exit host and matching firewall rules.
 
 This repository does not currently automate or claim acceptance for Linux/NAS exits or the full Windows WireGuard + UDPspeeder path. A WireGuard pairing file is not a native EasyTier client profile. The exit host is also a different role from the final game or application server.
 
@@ -175,7 +176,7 @@ Neither example is a universal recommendation. Start with parameters appropriate
 
 ## 10. Independent computer access
 
-Install the **official EasyTier GUI** from the [official download page](https://easytier.cn/guide/download.html) to access an authorized regional exit from a computer independently of the local OpenWrt router. Keep its configuration private and allocate a unique virtual address and instance identity. The exit needs a matching native EasyTier listener, network identity, and Internet forwarding configuration. This mode covers that computer's selected traffic; the gateway mode manages devices using its accelerated network.
+Install the **official EasyTier GUI** from the [official download page](https://easytier.cn/guide/download.html) to access an authorized regional exit from a computer independently of the local OpenWrt router. Keep its configuration private. Authorized clients may use the same filled profile with DHCP enabled and fixed address/instance fields omitted; the official program allocates an available virtual address and generates the local instance identifier. Do not copy a fixed-address restore profile to several running clients. The exit needs a matching native EasyTier listener, network identity, and Internet forwarding configuration. This mode covers that computer's selected traffic; the gateway mode manages devices using its accelerated network.
 
 An independent native EasyTier client needs its own acceptance checks. It does not automatically include the router's UDPspeeder FEC path. Stop conflicting old services before starting a GUI profile with the same address. Exclude tunnel interfaces and tunnel subnets from the underlay so a tunnel cannot become its own transport.
 
@@ -190,3 +191,24 @@ See [public resources](PUBLIC-RESOURCES.md). Shared EasyTier relays, Internet ex
 ## 12. Attribution
 
 EasyTier, WireGuard, UDPspeeder, and ZeroTier provide the underlying protocols and algorithms. This project contributes deployment integration, routing management, recovery checks, and LuCI controls. New project code is licensed under Apache-2.0; third-party components retain their own licenses.
+
+
+## 13. Reuse a working OpenWrt FEC gateway
+
+The official client can add a local native connection to a gateway that already manages a working regional exit:
+
+```text
+Official computer client -> native entry on the policy gateway
+  -> existing traffic selection -> existing WireGuard + UDPspeeder -> authorized exit
+Unselected IPv4 -> gateway's local Internet connection
+```
+
+Read [native-gateway integration](NATIVE-GATEWAY.md) and [deployment lessons](DEPLOYMENT-LESSONS.md). The Chinese steps include reference TOML files for EasyTier 2.6.4. Fill matching private credentials, entry addresses and the virtual subnet before importing. A client using DHCP does not need a manually assigned account or address. The gateway keeps a fixed virtual address for its exit role.
+
+Manual gateway integration must cover the new TUN source in the existing classifier, policy routing, forwarding and return path. If the old WireGuard path only admits its existing source, add the appropriate allowed range or source NAT for selected traffic. Preserve local forwarding, DNS/NTP exclusions, underlay bypass and IPv6. The new native interface does not automatically inherit every application-specific TCP/DNS rule.
+
+The TOML field is `routes`, while the CLI option is `--manual-routes`. Two IPv4 `/1` routes can hand traffic to a policy gateway when an equal-prefix default loses on metric. Check underlay reachability first; this is not a universal default for direct native exits. Windows selects the longest matching prefix before comparing metrics. [Microsoft routing reference](https://learn.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-tcpip-interfaces-interface-routes-route-metric)
+
+Keep rules persistent across firewall reloads and clean up only this entry's changes when stopping. Endpoint discovery remains on the router; it updates authenticated addresses and validates the current exit before restoring selected forwarding. The hotplug hook also matches configured WAN names and ZeroTier `zt*` devices, with polling as a fallback.
+
+Treat parsing, address allocation, real TUN routing, application traffic and recovery as separate checks. A `--check-config` pass or two `--no-tun` instances does not establish another physical computer's exit path. A login TCP request does not establish that a game scene's UDP uses the selected exit. Measure actual connections and keep untested external networks explicit.

@@ -1,0 +1,11 @@
+# Reference expressions, NOT a complete deployable firewall file.
+# Replace the existing set/table/mark and preserve all underlay/DNS/NTP exclusions.
+# Native client source: 10.77.90.0/24; existing gateway controls both exits.
+
+insert rule inet fw4 mangle_prerouting iifname "etnative" ip saddr 10.77.90.0/24 ip daddr @cn_games4 udp dport { 1-52, 54-122, 124-65535 } counter meta mark set meta mark | 0x80000000 comment "et-native-classifier"
+
+# Add forward permission for etnative -> existing WG device AND local WAN device.
+# The actual device names and the existing policy-routing table must be inspected first.
+# If the existing home tunnel only admits its assigned WG source, source NAT is needed:
+#   oifname "WG_DEVICE" ip saddr 10.77.90.0/24 counter snat ip to WG_SOURCE_IPV4
+# Do not replace the system firewall or copy a runtime nft dump.

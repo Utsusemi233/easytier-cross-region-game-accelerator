@@ -1,10 +1,10 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-easytier-home-game
-PKG_VERSION:=0.1.1
+PKG_VERSION:=0.1.3
 PKG_RELEASE:=1
 PKG_LICENSE:=Apache-2.0
-LUCI_TITLE:=EasyTier home game gateway extension
+LUCI_TITLE:=EasyTier cross-region game routing extension
 LUCI_DEPENDS:=+luci-app-easytier +luci-compat +luci-lib-jsonc +luci-lib-nixio +curl +wireguard-tools +ip-full +conntrack +zerotier
 LUCI_PKGARCH:=all
 

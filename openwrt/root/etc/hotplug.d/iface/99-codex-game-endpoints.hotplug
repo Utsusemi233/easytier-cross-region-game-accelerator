@@ -1,4 +1,15 @@
 #!/bin/sh
 case "$ACTION" in ifup|ifupdate|ifdown) ;; *) exit 0;; esac
-case "$INTERFACE" in wan|wan6|zerotier) ;; *) exit 0;; esac
+matched=0
+case "$INTERFACE" in wan|wan6|zerotier) matched=1;; esac
+# ZeroTier UCI network names are user-defined; its Linux device uses zt*.
+case "$DEVICE" in zt*) matched=1;; esac
+if [ "$matched" != 1 ]; then
+ for configured in \
+  "$(uci -q get easytier_home_game.main.wan 2>/dev/null || true)" \
+  "$(uci -q get easytier_home_game.main.wan6 2>/dev/null || true)"; do
+  [ -n "$configured" ] && [ "$INTERFACE" = "$configured" ] && matched=1
+ done
+fi
+[ "$matched" = 1 ] || exit 0
 printf '%s:%s:%s\n' "$INTERFACE" "$ACTION" "$$" >/var/run/codex-game-endpoint-wake
