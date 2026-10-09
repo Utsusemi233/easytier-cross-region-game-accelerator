@@ -1,0 +1,27 @@
+# Demonstration only. Fill private identity; use the matching recovery component.
+# Regional routes are installed only after actual gateway + HTTPS verification.
+dhcp = true
+instance_name = 'RegionTravel'
+hostname = 'TravelClient'
+listeners = []
+routes = ['10.10.10.0/24']
+exit_nodes = ['10.10.10.1']
+
+[network_identity]
+network_name = 'REPLACE_WITH_PRIVATE_NETWORK_NAME'
+network_secret = 'REPLACE_WITH_PRIVATE_NETWORK_SECRET'
+
+[[peer]]
+uri = 'udp://127.0.0.1:14433'
+
+[flags]
+dev_name = 'RegionTravel'
+mtu = 1200
+disable_encryption = false
+disable_ipv6 = false
+disable_p2p = true
+disable_udp_hole_punching = true
+disable_sym_hole_punching = true
+latency_first = true
+enable_kcp_proxy = false
+use_smoltcp = false

@@ -21,6 +21,7 @@
 | --- | --- | --- |
 | Windows 原生 EasyTier 客户端 | 提供官方 GUI 配置和 AI 操作说明，见[电脑接入说明](WINDOWS-TRAVEL.md) | 匹配的原生出口入口、共享网络凭据、未冲突的自动或固定地址、实际路由与出口、直连或中继、停止与网络切换 |
 | 官方电脑客户端接入已有 OpenWrt 纠错网关 | 2.6.4 TOML 与手工集成参考，见[原生网关接入](NATIVE-GATEWAY.md)；安装脚本不自动部署新增桥接 | 原生 TUN 的分类、策略路由、WG源允许范围/源NAT、当地出口、重载恢复；真实新机器与外出单独验收 |
+| Windows 网关模式动态维护 | Windows PowerShell 5.1；官方 GUI 2.6.4 与自有 ZeroTier，见[换网部署](NETWORK-ROAMING.md) | 物理 IPv4 网关、原生入口防火墙、TUN/度量与自身路线；IPv6-only、多 VPN、多物理接口和开机恢复分别验收 |
 | Windows WireGuard + UDPspeeder | 尚未完成该完整链路的验收 | 纠错运行环境、两端参数、端点维护和游戏效果 |
 | Linux 主机或 NAS 授权出口 | 可按平台另行部署服务；仓库尚无对应的自动部署实现或验收结论 | 所选隧道服务、运行权限、公网入口、防火墙、互联网转发/NAT及服务恢复 |
 
@@ -33,3 +34,8 @@
 使用安装脚本清理本扩展自己的 Lua 编译缓存。不同主题、nftables 表达形式、系统库及防火墙版本须在实际设备检查。内存不足时不要叠加新的重型服务。
 
 每次部署都应按[验收方法](ACCEPTANCE.md)记录通过、失败与未执行项目。公开仓库不收录所有者的具体硬件记录、地址或私人测试数据。
+
+
+## 可选 Windows 原生直连纠错
+
+参考软件范围为官方 GUI/core 2.6.4、Windows PowerShell 5.1、UDPspeeder Windows V2 20180806.0，以及匹配架构的出口二进制。出口参考使用 fw3/iptables 和 TUN；fw4、其他平台和不同动态库必须分别核查。它是原生 EasyTier + UDPspeeder，不是 Windows WireGuard 后端。公开模板和隔离检查不替代每次设备验收。部署见 [DIRECT-HOME.md](DIRECT-HOME.md)。

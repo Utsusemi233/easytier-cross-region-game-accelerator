@@ -1,0 +1,12 @@
+{
+  "tunnel_alias": "etnative",
+  "gateway_virtual_ipv4": "10.77.90.1",
+  "zerotier_directory": "C:\\ProgramData\\ZeroTier\\One",
+  "state_directory": "E:\\EasyTier\\private\\roaming-state",
+  "full_routes": ["0.0.0.0/1", "128.0.0.0/1"],
+  "full_route_metric": 9000,
+  "poll_seconds": 2,
+  "probe_interval_seconds": 3,
+  "internet_probe_interval_seconds": 30,
+  "health_urls": ["https://www.baidu.com/", "https://www.microsoft.com/"]
+}

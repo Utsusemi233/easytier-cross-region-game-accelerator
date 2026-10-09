@@ -1,0 +1,29 @@
+{
+  "tunnel_alias": "RegionTravel",
+  "gateway_virtual_ipv4": "10.10.10.1",
+  "home_zerotier_id": "REPLACE_WITH_AUTHORIZED_NODE_ID",
+  "home_virtual_ipv4": "192.0.2.10",
+  "zerotier_directory": "C:\\ProgramData\\ZeroTier\\One",
+  "speeder_exe": "E:\\RegionTravel\\transport\\speederv2.exe",
+  "speeder_sha256": "REPLACE_WITH_VERIFIED_SHA256",
+  "fec_key": "REPLACE_WITH_PRIVATE_PAIR_KEY",
+  "local_fec_port": 14433,
+  "public_fec_port": 11022,
+  "private_fec_port": 11023,
+  "fec": "2:4",
+  "timeout_ms": 1,
+  "mode": 0,
+  "transport_mode": "auto",
+  "state_directory": "E:\\RegionTravel\\private\\recovery-state",
+  "prefixes_file": "E:\\RegionTravel\\private\\selected-prefixes.json",
+  "route_metric": 9000,
+  "probe_route_metric": 9877,
+  "poll_seconds": 1,
+  "retry_seconds": 25,
+  "health_ttl_seconds": 30,
+  "primary_retry_seconds": 120,
+  "reconnect_app_executables": [],
+  "exit_probes": [
+    {"host": "example.org", "ipv4": "203.0.113.20", "path": "/"}
+  ]
+}

@@ -212,3 +212,30 @@ The TOML field is `routes`, while the CLI option is `--manual-routes`. Two IPv4 
 Keep rules persistent across firewall reloads and clean up only this entry's changes when stopping. Endpoint discovery remains on the router; it updates authenticated addresses and validates the current exit before restoring selected forwarding. The hotplug hook also matches configured WAN names and ZeroTier `zt*` devices, with polling as a fallback.
 
 Treat parsing, address allocation, real TUN routing, application traffic and recovery as separate checks. A `--check-config` pass or two `--no-tun` instances does not establish another physical computer's exit path. A login TCP request does not establish that a game scene's UDP uses the selected exit. Measure actual connections and keep untested external networks explicit.
+
+## 14. Changing Wi-Fi, hotspots and physical IP addresses
+
+Mobile access should keep the same private profile when the computer changes networks. The user should not need to rewrite the physical IP address, gateway or virtual address. An optional Windows component now maintains owned routes for the official-client -> authorized ZeroTier -> existing native-gateway IPv4 mode. It retains the official GUI. Deploy it explicitly using the linked instructions and validate the actual device; it is not a universal roaming or seamless-session guarantee.
+
+Keep three changes separate: the computer's physical interface/address/gateway, EasyTier's virtual address allocation, and the remote exit's public endpoint. Virtual DHCP and router-side endpoint monitoring do not establish recovery of the computer's underlay. A fixed virtual address does not require a fixed public IP.
+
+Read [network roaming requirements](NETWORK-ROAMING.md). After a switch, transport must use the current physical network, with necessary bypass routes updated and only obsolete routes owned by this project removed. Full IPv4 routes must not send the tunnel's transport back through itself. An unbound interface setting or a working LAN entry is not sufficient evidence. A client using an existing gateway also needs a remotely reachable entry; all required gateways must stay online.
+
+Prefer the official client, official service mode and existing components. Do not create a replacement UI. Where automatic local recovery is requested, inspect and explicitly install the supplied `windows/` background component. It monitors network events, refreshes IPv4 underlay bypasses and gates the two managed `/1` routes on native-gateway and explicit IPv4 HTTPS checks (Windows curl.exe is required). `entry_verified` does not replace regional-exit verification on the router. The current component requires a physical IPv4 gateway; IPv6-only underlays need separate adaptation. If the chosen architecture cannot maintain required routes automatically, report that work as incomplete rather than requiring a fixed hotspot IP.
+
+Test Wi-Fi -> phone hotspot -> original Wi-Fi without changing the profile. Check the current gateway, direct/relayed peer path, TUN, selected exit, ordinary Internet and new application connections. Record recovery time. Report IPv4-only access, DHCP/gateway changes, brief outages and stop/restart separately as passed, failed or not performed. Roaming does not imply seamless preservation of game sessions. Restricted networks may require relays and have different performance. [ZeroTier network guidance](https://docs.zerotier.com/routertips/)
+
+
+Changing countries does not require a new physical IP in the shared profile. Reachability and latency still depend on the local network and authorized entry. Reusing a policy gateway in another region adds a segment; the Windows recovery component does not automatically select the lowest-latency exit. Direct native access to the regional exit is a separate deployment mode and does not automatically include the gateway's UDP FEC backend.
+
+
+## Direct exit with the official Windows GUI
+
+The optional direct mode connects the official GUI to a local UDPspeeder, then to the authorized exit's native EasyTier service. It prefers a discovered global IPv6 entry and can fall back to the same exit through an authorized ZeroTier IPv4 path. The original access-side router is not a required transit node. This is native EasyTier plus UDPspeeder, separate from the router's WireGuard backbone.
+
+See [the direct-mode guide](DIRECT-HOME.md) and [the step-by-step manual](../manual/README.md). Install the Windows task explicitly after reviewing the private configuration. A fresh virtual-gateway check and IPv4 HTTPS request bound to the TUN source must pass before selected destination routes are installed. When ICMP is lost, TCP DNS at the virtual gateway and bound HTTPS must both succeed. Total failure removes owned regional routes. Existing foreign traffic and physical IPv6 retain their ordinary paths.
+
+The exit binds each current global IPv6 separately so replies use the correct source address. Both sides monitor relevant address changes, but polling intervals are not recovery-time guarantees. A DHCP template can be shared by authorized computers; do not clone fixed virtual addresses or ZeroTier device identities. Test a different hotspot, ISP prefix changes, a second physical PC and full reboot separately. Do not claim universal reachability or uninterrupted game sessions.
+
+
+Health checks refresh before successful proof expires. A transient failed probe may retain routes only while previous proof remains fresh, and is reported as degraded. Failures never advance the successful timestamp. Changes to the physical network, virtual address or transport endpoint discard earlier proof. Expiry removes owned regional routes.
