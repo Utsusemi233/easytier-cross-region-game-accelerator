@@ -1,20 +1,31 @@
 # EasyTier Cross-Region Game Accelerator — User Guide
 
-**An EasyTier-based cross-region game acceleration toolkit for OpenWrt routers.**
+**An EasyTier-based cross-region game access toolkit focused on OpenWrt gateway routing.**
 
 The main repository content and current LuCI interface remain in Chinese. This guide explains the project in English. It contains no owner's addresses, credentials, or personal test results.
 
 ## 1. What this project does
 
-Connect an OpenWrt router in one country or region to a broadband exit you control in another. Selected game or application traffic uses that exit; other traffic keeps its local route. The project integrates EasyTier, WireGuard, UDPspeeder forward error correction, selective routing, endpoint discovery, and a LuCI management page.
+Send selected local game or application traffic through a tunnel to an authorized exit in another country or region, then use that exit's Internet connection to reach the application server. An exit can be a home broadband gateway or a public server you control and configure for forwarding.
+
+The main mode uses a local OpenWrt router to manage selected traffic from devices on its accelerated network. It integrates EasyTier, WireGuard, UDPspeeder forward error correction, selective routing, endpoint discovery, and a LuCI management page. Devices using that network share the gateway connection without installing their own tunnel clients; unselected traffic keeps its local route.
+
+A computer can also use the official EasyTier client to access a matching native exit entry independently of the local router. This repository provides configuration and AI deployment guidance for that mode. Native computer access does not automatically include the gateway's UDPspeeder FEC path.
 
 It is not limited to connecting to China. Choose an authorized exit in a region appropriate for the application. A shorter or more reliable route may help, but an extra tunnel can also make a connection slower. Measure your own connection before keeping a rule enabled.
 
-This is a source preview, not a hosted VPN service. No public exit is included. You provide both endpoints and their Internet connections. A commercial game accelerator subscription is not required for a self-hosted setup, but equipment, broadband, and error-correction traffic still have costs.
+This is a source preview, not a hosted VPN service. No public exit is included. You provide the access network and an authorized exit. A commercial game accelerator subscription is not required for a self-hosted setup, but equipment, Internet access, exit hosting, and error-correction traffic still have costs.
 
-## 2. Requirements and limits
+## 2. Access modes, requirements, and limits
 
-- Administrative access to both OpenWrt routers and permission to use the exit connection.
+| Access mode | Traffic scope | What this repository provides |
+| --- | --- | --- |
+| OpenWrt gateway, the main mode | Selected devices and destinations within the accelerated network | LuCI controls, gateway deployment, WireGuard + UDPspeeder FEC, endpoint updates, and exit verification |
+| Independent computer client | Traffic from that computer, according to its native client routes | Official EasyTier GUI setup and AI instructions, with separate acceptance checks |
+
+The exit receives tunnel traffic and forwards it through the target region's Internet connection. Compatible routers, Linux hosts, or suitable NAS devices can perform that role with separately configured services and forwarding. The current automated gateway deployment targets an OpenWrt access side and an OpenWrt exit side, with these requirements:
+
+- Administrative access to the OpenWrt access and exit gateways and permission to use the exit connection.
 - Reachable global IPv6 addresses for the current router-to-router FEC transport.
 - EasyTier, WireGuard, UDPspeeder V2, and binaries matching each router's CPU architecture.
 - The access router currently needs fw4/nftables, WireGuard kernel support, Lua 5.1, the LuCI Lua compatibility layer, `ip`, `curl`, and `conntrack`.
@@ -23,27 +34,42 @@ This is a source preview, not a hosted VPN service. No public exit is included. 
 
 See [compatibility](COMPATIBILITY.md). Other firewall combinations, architectures, IPv4-only FEC transport, complete prefix changes, and multiple access routers need separate adaptation and acceptance checks. Do not install another firmware's kernel modules merely because a package name matches.
 
-Rules select destination IPv4 addresses and ports. Automatic discovery of every application's servers and destination IPv6 policy routing are not complete features of this version. APNIC allocation records, if used in an independent PC setup, indicate address registration regions rather than application ownership.
+Independent computer access requires its own identity, unused virtual address, matching native EasyTier exit entry, and route configuration. It does not require a local OpenWrt router. A reachable public address can provide a direct connection, but the actual peer path must distinguish direct access from relay transport. Public IPv4 behind an upstream router needs the appropriate UDP port mapping; IPv6 access needs a reachable global address on the exit host and matching firewall rules.
+
+This repository does not currently automate or claim acceptance for Linux/NAS exits or the full Windows WireGuard + UDPspeeder path. A WireGuard pairing file is not a native EasyTier client profile. The exit host is also a different role from the final game or application server.
+
+Gateway rules select destination IPv4 addresses and ports. Automatic discovery of every application's servers and destination IPv6 policy routing are not complete features of this version. APNIC allocation records, if used in an independent PC setup, indicate address registration regions rather than application ownership.
 
 ## 3. How the router path works
 
 ```text
-Selected traffic in region A
+Devices on the local accelerated network
+  -> OpenWrt gateway: select traffic by rules
   -> WireGuard
   -> UDPspeeder FEC over global IPv6
-  -> authorized exit in region B
-  -> EasyTier WireGuard portal
+  -> EasyTier WireGuard portal on the authorized regional exit
   -> exit broadband
   -> application server
 
-Unselected traffic -> region A's local Internet connection
+Unselected traffic -> local Internet connection
 ```
 
 The two FEC endpoints must use matching parameters. Keep existing working identities, wireless networks, IPv6 settings, and application rules when adopting an existing deployment.
 
+The independent computer path uses a separate native entry:
+
+```text
+Official EasyTier computer client
+  -> matching native exit entry, directly or through a relay
+  -> authorized exit Internet connection
+  -> application server
+
+Unselected traffic -> computer's local Internet connection
+```
+
 ## 4. Install the LuCI extension
 
-Read [AGENTS.md](../AGENTS.md) and [deployment instructions](DEPLOY.md) before making network changes. Back up both routers first.
+This installation is for the OpenWrt gateway mode. Read [AGENTS.md](../AGENTS.md) and [deployment instructions](DEPLOY.md) before making network changes. Back up the access and exit routers first. Independent computer setup starts with [Windows notes](WINDOWS-TRAVEL.md) and [the AI handoff prompt](PORTABLE-AI-PROMPT.md).
 
 Install the upstream `luci-app-easytier` and required dependencies. Build the `openwrt/` package using a compatible OpenWrt SDK, or use the source installation procedure for evaluation:
 
@@ -58,7 +84,7 @@ The page extends the existing **VPN → EasyTier** menu. The Chinese entry **跨
 
 Legacy internal package, UCI, and file identifiers containing `home-game` remain for upgrade compatibility. The public project name is **EasyTier Cross-Region Game Accelerator**.
 
-## 5. Configure and deploy the two sides
+## 5. Configure the OpenWrt access and exit gateways
 
 Use [example configurations](../examples/) as templates. They are examples, not live credentials. Set real values privately on your own equipment.
 
@@ -147,9 +173,9 @@ More redundancy increases bandwidth. For a mathematical `2:30` example, every tw
 
 Neither example is a universal recommendation. Start with parameters appropriate for the connection, keep both sides consistent, and measure extra traffic before increasing redundancy.
 
-## 10. A computer away from the router
+## 10. Independent computer access
 
-The router's rules apply only to devices using its network. For a laptop on another network, install the **official EasyTier GUI** from the [official download page](https://easytier.cn/guide/download.html). Keep its configuration private and allocate a unique virtual address and instance identity.
+Install the **official EasyTier GUI** from the [official download page](https://easytier.cn/guide/download.html) to access an authorized regional exit from a computer independently of the local OpenWrt router. Keep its configuration private and allocate a unique virtual address and instance identity. The exit needs a matching native EasyTier listener, network identity, and Internet forwarding configuration. This mode covers that computer's selected traffic; the gateway mode manages devices using its accelerated network.
 
 An independent native EasyTier client needs its own acceptance checks. It does not automatically include the router's UDPspeeder FEC path. Stop conflicting old services before starting a GUI profile with the same address. Exclude tunnel interfaces and tunnel subnets from the underlay so a tunnel cannot become its own transport.
 

@@ -2,7 +2,13 @@
 
 Read `README.md`, `docs/DEPLOY.md`, `docs/COMPATIBILITY.md`, and `docs/ACCEPTANCE.md` before touching a router. This is an additive extension of EasyTier's existing LuCI menu, not a replacement EasyTier management application.
 
-## Workflow
+## Choose the access mode
+
+- The main mode is an OpenWrt access gateway that routes selected traffic from devices on its accelerated network through an authorized regional exit. The current gateway scripts deploy an fw4 OpenWrt access side and an fw3 OpenWrt exit side; this implementation scope does not define every possible exit platform.
+- An independent computer uses the official EasyTier client and its own native connection profile. Read `docs/WINDOWS-TRAVEL.md` and `docs/PORTABLE-AI-PROMPT.md`; do not run the router installation workflow on a PC. The exit must expose a matching native EasyTier entry. A WireGuard pairing export is not a native EasyTier profile, and native PC access does not automatically include UDPspeeder FEC.
+- Linux hosts and suitable NAS devices are possible exit platforms with separately configured services and forwarding. This repository does not currently automate or claim acceptance for those deployments. Distinguish the exit host from the application server, and report direct versus relayed paths accurately.
+
+## OpenWrt gateway workflow
 
 1. Collect the router roles, firmware/firewall versions, existing accelerated network, binaries, global WAN IPv6 and authorized address-discovery peer identity. Do not infer compatibility from an upstream package's version claims.
 2. For an existing codex-game prototype, use `et-game adopt` to populate the real role and discovery configuration first, then run `et-game doctor`. For new routers fill the configuration before doctor. Preserve existing WireGuard identity, SSIDs, IPv6 relay, application DNS and FEC settings.

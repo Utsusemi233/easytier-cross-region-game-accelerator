@@ -1,4 +1,8 @@
-# 部署与失败处理
+# OpenWrt 网关部署与失败处理
+
+本文覆盖当前自动部署脚本：本地 OpenWrt 接入端负责接入网络内选定流量的分流，目标地区的 OpenWrt 出口端负责隧道接入和互联网转发。两台 OpenWrt 是这条部署路径的要求。
+
+电脑独立接入使用官方 EasyTier 客户端，按[电脑接入说明](WINDOWS-TRAVEL.md)和[AI 部署提示词](PORTABLE-AI-PROMPT.md)配置。Linux 主机或 NAS 出口需另行部署匹配的服务与转发，本文的 UCI、LuCI 和 `et-game` 步骤不能直接用于这些设备。
 
 ## 先检查
 
@@ -29,9 +33,9 @@ sh scripts/install.sh --install
 
 进入VPN→EasyTier→跨地区游戏加速，可查看线路、执行检测、管理附加目的IPv4规则与设备范围、保存并应用配置。需要恢复时使用本插件生成的备份，保留原游戏和应用规则。
 
-## 新设备部署顺序
+## 新 OpenWrt 网关部署顺序
 
-1. 两台路由器分别填写`examples/home.uci`和`examples/client.uci`对应字段，两端FEC、端口和内层网段一致。家庭role=home，海外role=client，mode=managed。
+1. 出口端 OpenWrt 填写`examples/home.uci`，本地接入端 OpenWrt 填写`examples/client.uci`，两端FEC、端口和内层网段一致。出口role=home，接入role=client，mode=managed；角色名称不限制出口所在国家或地区。
 2. 两端加入同一个获授权ZeroTier网络。填写对端固定节点ID、虚拟地址、虚拟MAC与实际虚拟接口；自动发现使用已知身份的全球IPv6路径。原生IPv6还必须实际可达。
 3. 家庭先`et-game doctor`→`et-game plan`→`et-game apply`。应用只创建项目的服务/规则；入口UDP端口与已有服务冲突必须先解决。确认自己的家庭宽带允许出口NAT。
 4. 从家庭生成配对资料。配对文件可能含WG客户端私钥，只能经你控制的渠道传到海外路由器，不放GitHub、不贴诊断日志。客户端导入后指定不冲突的内层IP、现有游戏网络和规则范围。
