@@ -239,3 +239,10 @@ The exit binds each current global IPv6 separately so replies use the correct so
 
 
 Health checks refresh before successful proof expires. A transient failed probe may retain routes only while previous proof remains fresh, and is reported as degraded. Failures never advance the successful timestamp. Changes to the physical network, virtual address or transport endpoint discard earlier proof. Expiry removes owned regional routes.
+
+
+## Direct and gateway profiles
+
+Keep the direct profile and add a separate native profile for an authorized policy gateway. An intermediate gateway can avoid a poor underlay route, but its first-hop latency is not the final application latency. See [route profiles](ROUTE-PROFILES.md).
+
+The official GUI network name is a pairing parameter. Rename it at both the client and the corresponding entry, after inspecting active clients and preserving existing services. Use distinct TUN names and disable one overlapping profile before running the other. Optional selected-prefix maintenance uses `Install-NativeGatewayRecovery.ps1`; its Windows HTTPS proof does not replace gateway-to-exit verification. A reverse overseas-exit profile is a separate future deployment and has not been accepted by this workflow.

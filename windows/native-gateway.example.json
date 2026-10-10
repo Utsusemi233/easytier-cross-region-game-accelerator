@@ -1,0 +1,16 @@
+{
+  "tunnel_alias": "RegionGateway",
+  "gateway_virtual_ipv4": "10.77.90.1",
+  "zerotier_directory": "C:\\ProgramData\\ZeroTier\\One",
+  "state_directory": "E:\\RegionTravel\\private\\gateway-state",
+  "prefixes_file": "E:\\RegionTravel\\private\\selected-prefixes.json",
+  "route_metric": 9001,
+  "probe_route_metric": 9878,
+  "poll_seconds": 1,
+  "health_ttl_seconds": 30,
+  "exit_probes": [
+    { "host": "example.com", "ipv4": "203.0.113.10", "path": "/" }
+  ],
+  "reconnect_app_executables": [],
+  "conflicting_tunnel_aliases": ["RegionDirect"]
+}
