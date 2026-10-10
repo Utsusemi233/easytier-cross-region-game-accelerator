@@ -80,6 +80,8 @@ flowchart LR
 
 手机热点的跨境直连变慢时，可保留直连配置，并另存经自有网关的路径。两种方案在官方 GUI 分别管理，按完整链路实测选择；名称、动态维护和反向出口规划见[多路径配置说明](docs/ROUTE-PROFILES.md)。
 
+后续改进见[加速项目源码阅读与改进方向](docs/ACCELERATOR-ENGINEERING.md)，对照 gtun、EasyTier、sing-box、Hysteria、UDPspeeder、Glorytun、Phantun 与队列管理项目，区分已确认的机制和待测试方案。
+
 电脑移动接入的要求是：换 Wi-Fi、手机热点或实际 IP 后，继续使用同一份配置并自动恢复，无需用户修改地址。部署时必须检查底层入口绕行、当前物理网关和旧路线清理，并实测切换后出口。虚拟 IP 自动分配与家庭公网 IPv6 更新是另外两项功能，不能代替电脑换网验收。现提供可选的 Windows 网关模式网络维护组件，处理本机 IPv4 接口/网关变化、底层绕行与入口失效回退；需按自己的设备验收，不保证任意热点或游戏会话无缝保持，见[换网部署与检查](docs/NETWORK-ROAMING.md)。
 
 OpenWrt 网关模式先阅读[部署文档](docs/DEPLOY.md)，安装依赖并填写接入端与出口端配置：
