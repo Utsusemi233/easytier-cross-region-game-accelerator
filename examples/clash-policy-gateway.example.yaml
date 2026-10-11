@@ -1,0 +1,68 @@
+# Reference only: documentation address, no live service. Replace values and add owned target rules.
+mixed-port: 7897
+allow-lan: false
+mode: rule
+ipv6: true
+find-process-mode: always
+tun:
+  enable: true
+  device: ClashPolicyGateway
+  stack: mixed
+  inet6-address: []
+  mtu: 1180
+  auto-route: true
+  auto-detect-interface: true
+  strict-route: false
+  dns-hijack:
+  - any:53
+  - tcp://any:53
+  route-exclude-address:
+  - 10.0.0.0/8
+  - 172.16.0.0/12
+  - 192.168.0.0/16
+proxies:
+- name: Authorized policy gateway
+  type: ss
+  server: 192.0.2.10
+  port: 18444
+  cipher: chacha20-ietf-poly1305
+  password: REPLACE-WITH-YOUR-OWN-SECRET
+  udp: true
+  udp-over-tcp: false
+  ip-version: ipv4
+proxy-groups:
+- name: Regional exit
+  type: fallback
+  proxies:
+  - Authorized policy gateway
+  - DIRECT
+  url: https://wifi.vivo.com.cn/generate_204
+  expected-status: 204
+  interval: 30
+  timeout: 5000
+  lazy: true
+dns:
+  enable: true
+  listen: 127.0.0.1:1053
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  ipv6: true
+  nameserver:
+  - https://1.1.1.1/dns-query#DIRECT
+  default-nameserver:
+  - 1.1.1.1
+  - 8.8.8.8
+  proxy-server-nameserver:
+  - https://8.8.8.8/dns-query#DIRECT
+rules:
+- IP-CIDR,192.0.2.10/32,DIRECT,no-resolve
+- IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+- IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+- IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+- IP-CIDR6,::/0,DIRECT,no-resolve
+- DST-PORT,53,DIRECT
+- DST-PORT,123,DIRECT
+- PROCESS-NAME,zerotier-one_x64.exe,DIRECT
+- PROCESS-NAME,zerotier-one.exe,DIRECT
+- DOMAIN-SUFFIX,example.cn,Regional exit
+- MATCH,DIRECT

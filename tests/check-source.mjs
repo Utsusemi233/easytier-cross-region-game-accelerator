@@ -6,7 +6,9 @@ const require=createRequire(import.meta.url), lua=require('luaparse'), acorn=req
 const root=path.resolve(new URL('..',import.meta.url).pathname.replace(/^\/([A-Za-z]:)/,'$1'));
 function walk(dir){return fs.readdirSync(dir,{withFileTypes:true}).filter(e=>!['node_modules','.git','artifacts','local'].includes(e.name)).flatMap(e=>e.isDirectory()?walk(path.join(dir,e.name)):[path.join(dir,e.name)]);}
 let count=0;
-for(const file of walk(path.join(root,'openwrt'))){
+const sources=[...walk(path.join(root,'openwrt'))];
+if(fs.existsSync(path.join(root,'extras'))) sources.push(...walk(path.join(root,'extras')));
+for(const file of sources){
  const text=fs.readFileSync(file,'utf8');
  if(file.endsWith('.lua')){lua.parse(text,{luaVersion:'5.1'});count++;}
  if(file.endsWith('.js')) acorn.parse(text,{ecmaVersion:5});
@@ -26,7 +28,7 @@ assert(model.includes('pcall(M.rollback,backup.id)'),'Failed application must at
 assert(controller.includes("'ubus call service add '")&&controller.includes('SIGALRM'),'Start timed probes through procd, not the CGI signal environment');
 assert(controller.includes('return {download=data}')&&controller.includes('http.write(result.download)'),'Send private downloads outside the Lua 5.1 protected operation');
 for(const file of walk(root)){
- if(!/\.(md|lua|sh|ps1|htm|json|uci|yml)$/.test(file))continue;
+ if(!/\.(md|lua|sh|ps1|htm|json|uci|ya?ml)$/.test(file))continue;
  const source=fs.readFileSync(file,'utf8');
  if(file===path.join(root,'tests/check-source.mjs'))continue;
  assert(!/-----BEGIN (?:OPENSSH |RSA |EC )?PRIVATE KEY-----|https?:\/\/root:[^@\s]+@/.test(source),'Private credentials in public repository');

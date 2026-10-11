@@ -1,0 +1,12 @@
+{
+  "provider": "duckdns",
+  "subdomain": "YOUR-OWN-SUBDOMAIN",
+  "token": "REPLACE-WITH-YOUR-OWN-TOKEN",
+  "interface": "REPLACE-WITH-LINUX-DEVICE",
+  "port": 18443,
+  "require_listener": true,
+  "poll_seconds": 10,
+  "retry_seconds": 30,
+  "refresh_seconds": 1800,
+  "dns_check_seconds": 300
+}

@@ -128,3 +128,9 @@ et-game verify
 ## 上游与许可
 
 [EasyTier](https://github.com/EasyTier/EasyTier)、[luci-app-easytier](https://github.com/EasyTier/luci-app-easytier)、[WireGuard](https://www.wireguard.com/)、[UDPspeeder](https://github.com/wangyu-/UDPspeeder)、[ZeroTier](https://github.com/zerotier/ZeroTierOne)。隧道、P2P、WireGuard 和纠错算法来自上游；本项目提供部署、分流、状态验证与管理整合。新增代码采用 Apache-2.0，第三方组件保留原许可。
+
+## 可选 Clash 接入与动态域名
+
+已有授权 OpenWrt 纠错网关可增加 SS TCP+UDP 接入，由 Mihomo TUN 复用原后端。规则、物理换网恢复和真实 UDP 需分别验证，见 [Clash 网关接入](docs/CLASH-GATEWAY.md)。这不是只更改配置格式，主安装脚本也不会自动部署该入口。
+
+另提供独立 [IPv6 动态域名模块](docs/DYNAMIC-DNS.md)：本机轻量地址检测、接口事件唤醒、供应商更新和 DNS 核对。DNS 状态与代理连通分开显示；配置模板不含真实入口或凭据。

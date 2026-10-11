@@ -246,3 +246,9 @@ Health checks refresh before successful proof expires. A transient failed probe 
 Keep the direct profile and add a separate native profile for an authorized policy gateway. An intermediate gateway can avoid a poor underlay route, but its first-hop latency is not the final application latency. See [route profiles](ROUTE-PROFILES.md).
 
 The official GUI network name is a pairing parameter. Rename it at both the client and the corresponding entry, after inspecting active clients and preserving existing services. Use distinct TUN names and disable one overlapping profile before running the other. Optional selected-prefix maintenance uses `Install-NativeGatewayRecovery.ps1`; its Windows HTTPS proof does not replace gateway-to-exit verification. A reverse overseas-exit profile is a separate future deployment and has not been accepted by this workflow.
+
+## Optional Clash gateway access and IPv6 DDNS
+
+An authorized SS TCP+UDP entry can connect a Mihomo TUN client to an existing OpenWrt policy gateway, retaining its WireGuard/UDPspeeder backend. The main installer does not deploy this entry. Read [the gateway reference](CLASH-GATEWAY.md), inspect UDP reply source addresses and routing/NAT, and test actual TUN traffic and network changes. A YAML import or an HTTP node delay is not game acceptance.
+
+The optional [IPv6 DDNS module](DYNAMIC-DNS.md) reads local addresses every 10 seconds, wakes on interface events, verifies DNS every 300 seconds, refreshes unchanged records every 1800 seconds and rate-limits retries to 30 seconds. It reports DNS and proxy connectivity separately. Private-network roaming, remote tunnel endpoint recovery and public DNS updates are separate mechanisms; none guarantees access from every network or uninterrupted game sessions.
