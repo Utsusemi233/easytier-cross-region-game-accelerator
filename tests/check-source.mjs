@@ -26,7 +26,7 @@ assert(model.includes('pcall(M.rollback,backup.id)'),'Failed application must at
 assert(controller.includes("'ubus call service add '")&&controller.includes('SIGALRM'),'Start timed probes through procd, not the CGI signal environment');
 assert(controller.includes('return {download=data}')&&controller.includes('http.write(result.download)'),'Send private downloads outside the Lua 5.1 protected operation');
 for(const file of walk(root)){
- if(!/\.(md|lua|sh|htm|json|uci|yml)$/.test(file))continue;
+ if(!/\.(md|lua|sh|ps1|htm|json|uci|yml)$/.test(file))continue;
  const source=fs.readFileSync(file,'utf8');
  if(file===path.join(root,'tests/check-source.mjs'))continue;
  assert(!/-----BEGIN (?:OPENSSH |RSA |EC )?PRIVATE KEY-----|https?:\/\/root:[^@\s]+@/.test(source),'Private credentials in public repository');

@@ -1,0 +1,17 @@
+{
+  "poll_seconds": 1,
+  "settle_seconds": 3,
+  "state_directory": "E:\\RegionTravel\\private\\dns-switch-state",
+  "profiles": [
+    {
+      "alias": "RegionDirect",
+      "status_file": "E:\\RegionTravel\\private\\direct-recovery-state\\status.private.json",
+      "proof_ttl_seconds": 30
+    },
+    {
+      "alias": "RegionGateway",
+      "status_file": "E:\\RegionTravel\\private\\gateway-state\\status.private.json",
+      "proof_ttl_seconds": 30
+    }
+  ]
+}
