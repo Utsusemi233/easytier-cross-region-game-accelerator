@@ -32,10 +32,15 @@ proxies:
   ip-version: ipv4
 proxy-groups:
 - name: Regional exit
+  type: select
+  proxies:
+  - Regional proxy recovery
+  - Authorized policy gateway
+  - DIRECT
+- name: Regional proxy recovery
   type: fallback
   proxies:
   - Authorized policy gateway
-  - DIRECT
   url: https://wifi.vivo.com.cn/generate_204
   expected-status: 204
   interval: 30
