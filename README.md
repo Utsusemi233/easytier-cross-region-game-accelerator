@@ -103,6 +103,8 @@ et-game verify
 
 复用已有纠错网关时，从[原生网关接入步骤](docs/NATIVE-GATEWAY.md)开始。遇到“登录成功但场景失败”“规则命中但没有返程”“重载后规则消失”等问题，按[部署问题与处理](docs/DEPLOYMENT-LESSONS.md)逐层检查路由、UDP 分类、源 NAT、DNS/IPv6 与端点验证。
 
+若希望只操作 Clash，可阅读[Clash 便携接入已有地区出口](docs/MIHOMO-PORTABLE-ACCESS.md)。它说明 TUN、动态域名、内置 ZeroTier 自动身份与手动 DIRECT 的配置边界。这是需要另行配置和验收的接入方式，现有安装脚本不自动部署这些入口。
+
 可交给 AI：
 
 > 阅读仓库 AGENTS.md 和 README，先确定使用 OpenWrt 网关、电脑直连原生出口，还是电脑接入已有纠错网关，再阅读对应部署文档与故障处理。电脑接入还要读 NETWORK-ROAMING.md：换 Wi-Fi、热点和实际 IP 不要求我手改配置；检查新物理网关、底层绕行与旧路线清理，实测切换前后出口和普通网络。区分虚拟 DHCP、远端地址更新与电脑换网恢复。保留已有可用配置，报告通过、失败和未执行项目，未验证的自动恢复不得写成已完成，私人资料不公开。
