@@ -10,6 +10,8 @@
 
 [English user guide](docs/USER-GUIDE.en.md) · [中文部署说明](docs/DEPLOY.md) · [部署问题与处理](docs/DEPLOYMENT-LESSONS.md) · [换网与移动接入要求](docs/NETWORK-ROAMING.md) · [AI 操作入口](AGENTS.md)
 
+直连出口有延迟波动或间歇超时时，见[分层诊断与纠错比较](docs/DIRECT-EXIT-DIAGNOSTICS.md)。控制连接、实际出网、持续业务和游戏效果分别验收，保留每轮原始记录。
+
 ## 官方客户端直连与自动恢复
 
 新增可选的 Windows 直连组件：官方 GUI → 本机 UDPspeeder → 授权出口原生 EasyTier。公网 IPv6 与认证 ZeroTier 私网备用都连接同一出口，电脑不必先经过原访问端 OpenWrt。它与原 WireGuard/FEC 网关路径独立，见[直连说明](docs/DIRECT-HOME.md)和[分步手册](manual/README.md)。
