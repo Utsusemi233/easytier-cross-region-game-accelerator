@@ -1,0 +1,64 @@
+# Experimental Windows core v1.19.32-fec.3 is required.
+# This template does not install or configure an exit server.
+mixed-port: 7897
+allow-lan: false
+mode: rule
+ipv6: true
+find-process-mode: always
+profile:
+  store-selected: true
+dns:
+  enable: true
+  ipv6: true
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter: ['*.lan', '*.local', 'exit.example.com']
+  default-nameserver: ['1.1.1.1']
+  proxy-server-nameserver: ['https://1.1.1.1/dns-query#DIRECT']
+  nameserver: ['https://1.1.1.1/dns-query#DIRECT']
+tun:
+  enable: true
+  device: ClashFECGame
+  stack: gvisor
+  auto-route: true
+  auto-detect-interface: true
+  mtu: 1180
+  dns-hijack: ['any:53', 'tcp://any:53']
+  route-exclude-address: ['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16']
+proxies:
+  - name: Direct regional exit with FEC
+    type: easytier-fec
+    network-name: authorized-regional-exit
+    network-secret: CHANGE_ME_SHARED_SECRET
+    hostname: ClashFECClient
+    dhcp: true
+    peers: ['udp://exit.example.com:11022']
+    exit-nodes: ['10.250.0.1']
+    udp: true
+    no-listener: true
+    private-mode: true
+    disable-p2p: true
+    enable-encryption: true
+    encryption-algorithm: aes-gcm
+    mtu: 1180
+    ip-version: ipv6
+    state-dir: easytier/fec-direct
+    udp-fec:
+      type: udpspeeder-v2
+      key: CHANGE_ME_MATCH_SERVER_FEC_KEY
+      data-shards: 2
+      parity-shards: 30
+      timeout: 1
+      interval: 5
+      mtu: 1250
+      ports: [11022]
+proxy-groups:
+  - name: Game route
+    type: select
+    proxies: [Direct regional exit with FEC, DIRECT]
+rules:
+  - AND,((PROCESS-NAME,HTGame.exe),(NETWORK,UDP)),Game route
+  - AND,((PROCESS-NAME,StarRail.exe),(NETWORK,UDP)),Game route
+  # Keep resource downloads/TCP outside high-redundancy FEC. Add your own
+  # authorized normal TCP proxy rules here when direct login is unavailable.
+  - MATCH,DIRECT

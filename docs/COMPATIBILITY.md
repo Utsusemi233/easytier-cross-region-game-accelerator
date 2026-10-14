@@ -23,6 +23,7 @@
 | 官方电脑客户端接入已有 OpenWrt 纠错网关 | 2.6.4 TOML 与手工集成参考，见[原生网关接入](NATIVE-GATEWAY.md)；安装脚本不自动部署新增桥接 | 原生 TUN 的分类、策略路由、WG源允许范围/源NAT、当地出口、重载恢复；真实新机器与外出单独验收 |
 | Windows 网关模式动态维护 | Windows PowerShell 5.1；官方 GUI 2.6.4 与自有 ZeroTier，见[换网部署](NETWORK-ROAMING.md) | 物理 IPv4 网关、原生入口防火墙、TUN/度量与自身路线；IPv6-only、多 VPN、多物理接口和开机恢复分别验收 |
 | Windows WireGuard + UDPspeeder | 尚未完成该完整链路的验收 | 纠错运行环境、两端参数、端点维护和游戏效果 |
+| Windows Clash 核心内 FEC（实验） | 固定 Mihomo v1.19.32 自编 fec.3、Windows amd64；见 [核心内纠错](../extras/mihomo-fec/README.md) | 匹配原生出口、服务模式核心登记、物理接口选择、实际 TUN/UDP、域名恢复及旧会话释放；原版核心、安卓和 Shadowrocket 不接受扩展 |
 | Linux 主机或 NAS 授权出口 | 可按平台另行部署服务；仓库尚无对应的自动部署实现或验收结论 | 所选隧道服务、运行权限、公网入口、防火墙、互联网转发/NAT及服务恢复 |
 
 原生电脑入口不自动获得网关模式的 UDPspeeder 纠错；OpenWrt 配对资料也不能直接导入为原生 EasyTier 配置。公网 IPv4 在上级路由器上时需检查 UDP 端口映射；IPv6 接入需检查出口主机自身的全球地址与防火墙。固定公网地址和动态公网地址应分别验证实际恢复行为。

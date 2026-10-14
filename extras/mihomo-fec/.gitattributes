@@ -1,0 +1,6 @@
+# Preserve source/patch bytes checked by source-metadata.json across platforms.
+* -text
+# A serialized diff contains required context prefixes, including a lone space.
+*.patch -whitespace
+# A serialized diff contains required context prefixes, including a lone space.
+*.patch -whitespace

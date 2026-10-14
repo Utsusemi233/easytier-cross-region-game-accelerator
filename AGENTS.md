@@ -52,6 +52,8 @@ Check current physical IPv4/IPv6, gateway, virtual DHCP address, ownership journ
 
 ## Optional Clash and IPv6 DDNS paths
 
+The experimental in-core FEC path is separate: read `extras/mihomo-fec/README.md` and its pinned source metadata. `type: easytier-fec` requires the patched core; stock Mihomo must reject it rather than silently ignore FEC. Keep the official GUI and stable core as rollback, use the GUI's approved core registration on service-mode clients, and never bypass protected service paths. Source checks and native codec interoperability do not constitute full UDP, roaming or game acceptance. Preserve failed rounds, bandwidth overhead and actual route evidence; keep private measurements and configurations out of public commits.
+
 Read `docs/CLASH-GATEWAY.md`, `docs/DYNAMIC-DNS.md` and their reference files before changing these paths. Standard SS TCP+UDP can reuse an existing policy gateway's WG/FEC backend; protocol conversion alone does not create the necessary server. Inspect source binding, UDP reply addresses, owned ACLs, routing/NAT and fallback. Never broaden device authorization merely to make a test pass.
 
 Keep physical IPv6 and existing backend parameters. Test actual TUN UDP, same-target comparison, exit location, ordinary traffic, disconnection and a real different-network handoff. Preserve partial failures and untested game acceptance. The DDNS module's DNS proof is not proxy proof, and source publication does not deploy a live update. Its optional Lua checks must run with a compatible OpenWrt runtime; documentation fixtures are not live endpoint reassignment tests.

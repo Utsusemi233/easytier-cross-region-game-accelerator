@@ -1,0 +1,414 @@
+diff --git a/adapter/outbound/easytier.go b/adapter/outbound/easytier.go
+index b42fc23..a06463c 100644
+--- a/adapter/outbound/easytier.go
++++ b/adapter/outbound/easytier.go
+@@ -4,23 +4,29 @@ package outbound
+ 
+ import (
+ 	"context"
++	"encoding/json"
+ 	"errors"
+ 	"fmt"
+ 	"net"
+ 	"net/netip"
++	"net/url"
+ 	"os"
+ 	"path/filepath"
++	"sort"
+ 	"strings"
+ 	"sync"
+ 	"time"
+ 
++	"github.com/metacubex/mihomo/component/dialer"
+ 	"github.com/metacubex/mihomo/component/easytier"
+ 	"github.com/metacubex/mihomo/component/resolver"
++	"github.com/metacubex/mihomo/component/udpspeeder"
+ 	C "github.com/metacubex/mihomo/constant"
+ 	"github.com/metacubex/mihomo/dns"
+ 	"github.com/metacubex/mihomo/log"
+ 
+ 	corehost "github.com/easytier/easytier/easytier-go"
++	"github.com/easytier/easytier/easytier-go/platform"
+ 	D "github.com/miekg/dns"
+ )
+ 
+@@ -36,56 +42,60 @@ var errEasyTierClosed = errors.New("easytier outbound closed")
+ 
+ type EasyTier struct {
+ 	*Base
+-	option     EasyTierOption
+-	configTOML string
+-	stateDir   string
+-	instanceID string
+-	zone       string
+-	ctx        context.Context
+-	cancel     context.CancelFunc
+-	loopOnce   sync.Once
+-	startMu    sync.Mutex
+-	closed     bool
+-	readyCh    chan struct{}
+-	mu         sync.Mutex
+-	host       *corehost.Host
+-	instance   *corehost.Instance
+-	unregister func()
++	fecTracker        *udpspeeder.Tracker
++	option            EasyTierOption
++	configTOML        string
++	stateDir          string
++	instanceID        string
++	zone              string
++	ctx               context.Context
++	cancel            context.CancelFunc
++	loopOnce          sync.Once
++	startMu           sync.Mutex
++	closed            bool
++	readyCh           chan struct{}
++	mu                sync.Mutex
++	host              *corehost.Host
++	instance          *corehost.Instance
++	unregister        func()
++	underlayInterface string
++	packetLeases      easytier.PacketLeases
+ }
+ 
+ type EasyTierOption struct {
+ 	BasicOption
+-	Name                string   `proxy:"name"`
+-	NetworkName         string   `proxy:"network-name,omitempty"`
+-	NetworkSecret       string   `proxy:"network-secret,omitempty"`
+-	Hostname            string   `proxy:"hostname,omitempty"`
+-	IPv4                string   `proxy:"ipv4,omitempty"`
+-	DHCP                bool     `proxy:"dhcp,omitempty"`
+-	Peers               []string `proxy:"peers,omitempty"`
+-	Listeners           []string `proxy:"listeners,omitempty"`
+-	NoListener          *bool    `proxy:"no-listener,omitempty"`
+-	MappedListeners     []string `proxy:"mapped-listeners,omitempty"`
+-	ExitNodes           []string `proxy:"exit-nodes,omitempty"`
+-	ProxyNetworks       []string `proxy:"proxy-networks,omitempty"`
+-	InstanceName        string   `proxy:"instance-name,omitempty"`
+-	StateDir            string   `proxy:"state-dir,omitempty"`
+-	UDP                 bool     `proxy:"udp,omitempty"`
+-	AcceptDNS           *bool    `proxy:"accept-dns,omitempty"`
+-	EnableExitNode      *bool    `proxy:"enable-exit-node,omitempty"`
+-	EnableEncryption    *bool    `proxy:"enable-encryption,omitempty"`
+-	EncryptionAlgorithm string   `proxy:"encryption-algorithm,omitempty"`
+-	PrivateMode         *bool    `proxy:"private-mode,omitempty"`
+-	LatencyFirst        *bool    `proxy:"latency-first,omitempty"`
+-	DisableP2P          *bool    `proxy:"disable-p2p,omitempty"`
+-	EnableKCPProxy      *bool    `proxy:"enable-kcp-proxy,omitempty"`
+-	DisableKCPInput     *bool    `proxy:"disable-kcp-input,omitempty"`
+-	EnableQUICProxy     *bool    `proxy:"enable-quic-proxy,omitempty"`
+-	DisableQUICInput    *bool    `proxy:"disable-quic-input,omitempty"`
+-	MTU                 int      `proxy:"mtu,omitempty"`
+-	TLDDNSZone          string   `proxy:"tld-dns-zone,omitempty"`
+-	SecureMode          *bool    `proxy:"secure-mode,omitempty"`
+-	LocalPrivateKey     string   `proxy:"local-private-key,omitempty"`
+-	LocalPublicKey      string   `proxy:"local-public-key,omitempty"`
++	UDPFEC              *udpspeeder.Option "proxy:\"udp-fec,omitempty\""
++	Name                string             `proxy:"name"`
++	NetworkName         string             `proxy:"network-name,omitempty"`
++	NetworkSecret       string             `proxy:"network-secret,omitempty"`
++	Hostname            string             `proxy:"hostname,omitempty"`
++	IPv4                string             `proxy:"ipv4,omitempty"`
++	DHCP                bool               `proxy:"dhcp,omitempty"`
++	Peers               []string           `proxy:"peers,omitempty"`
++	Listeners           []string           `proxy:"listeners,omitempty"`
++	NoListener          *bool              `proxy:"no-listener,omitempty"`
++	MappedListeners     []string           `proxy:"mapped-listeners,omitempty"`
++	ExitNodes           []string           `proxy:"exit-nodes,omitempty"`
++	ProxyNetworks       []string           `proxy:"proxy-networks,omitempty"`
++	InstanceName        string             `proxy:"instance-name,omitempty"`
++	StateDir            string             `proxy:"state-dir,omitempty"`
++	UDP                 bool               `proxy:"udp,omitempty"`
++	AcceptDNS           *bool              `proxy:"accept-dns,omitempty"`
++	EnableExitNode      *bool              `proxy:"enable-exit-node,omitempty"`
++	EnableEncryption    *bool              `proxy:"enable-encryption,omitempty"`
++	EncryptionAlgorithm string             `proxy:"encryption-algorithm,omitempty"`
++	PrivateMode         *bool              `proxy:"private-mode,omitempty"`
++	LatencyFirst        *bool              `proxy:"latency-first,omitempty"`
++	DisableP2P          *bool              `proxy:"disable-p2p,omitempty"`
++	EnableKCPProxy      *bool              `proxy:"enable-kcp-proxy,omitempty"`
++	DisableKCPInput     *bool              `proxy:"disable-kcp-input,omitempty"`
++	EnableQUICProxy     *bool              `proxy:"enable-quic-proxy,omitempty"`
++	DisableQUICInput    *bool              `proxy:"disable-quic-input,omitempty"`
++	MTU                 int                `proxy:"mtu,omitempty"`
++	TLDDNSZone          string             `proxy:"tld-dns-zone,omitempty"`
++	SecureMode          *bool              `proxy:"secure-mode,omitempty"`
++	LocalPrivateKey     string             `proxy:"local-private-key,omitempty"`
++	LocalPublicKey      string             `proxy:"local-public-key,omitempty"`
+ }
+ 
+ func (o EasyTierOption) structuredConfig() easytier.Config {
+@@ -126,6 +136,11 @@ func (o EasyTierOption) structuredConfig() easytier.Config {
+ }
+ 
+ func NewEasyTier(option EasyTierOption) (*EasyTier, error) {
++	if option.UDPFEC != nil {
++		if err := option.UDPFEC.Validate(); err != nil {
++			return nil, err
++		}
++	}
+ 	configTOML, err := option.structuredConfig().RenderTOML()
+ 	if err != nil {
+ 		return nil, err
+@@ -165,10 +180,34 @@ func NewEasyTier(option EasyTierOption) (*EasyTier, error) {
+ 		cancel:     cancel,
+ 	}
+ 	outbound.dialer = option.NewDialer(outbound.DialOptions())
++	if option.UDPFEC != nil {
++		outbound.fecTracker = &udpspeeder.Tracker{}
++		outbound.dialer = udpspeeder.FECdialer{Dialer: outbound.dialer, Option: *option.UDPFEC, Tracker: outbound.fecTracker}
++	}
+ 	outbound.unregister = dns.RegisterEasyTierDnsClient(option.Name, easyTierDNSTransport{easytier: outbound})
+ 	return outbound, nil
+ }
+ 
++func (e *EasyTier) MarshalJSON() ([]byte, error) {
++	raw, err := e.Base.MarshalJSON()
++	if err != nil {
++		return nil, err
++	}
++	if e.fecTracker == nil {
++		return raw, nil
++	}
++	var info map[string]any
++	if err = json.Unmarshal(raw, &info); err != nil {
++		return nil, err
++	}
++	info["udp-fec"] = map[string]any{"enabled": true, "mode": 0, "data_shards": e.option.UDPFEC.DataShards, "parity_shards": e.option.UDPFEC.ParityShards, "timeout_ms": e.option.UDPFEC.Timeout, "interval_ms": e.option.UDPFEC.Interval, "stats": e.fecTracker.Snapshot()}
++	e.mu.Lock()
++	info["physical-interface"] = e.underlayInterface
++	e.mu.Unlock()
++	info["recovery-generation"] = e.packetLeases.Generation()
++	return json.Marshal(info)
++}
++
+ func (e *EasyTier) ensureStarted(ctx context.Context) error {
+ 	e.loopOnce.Do(func() {
+ 		go e.loop()
+@@ -290,8 +329,21 @@ func (e *EasyTier) init() error {
+ 	if instanceName == "" {
+ 		instanceName = e.option.Name
+ 	}
++	transportDialer := e.dialer
++	if e.option.UDPFEC != nil && e.option.Interface == "" {
++		iface, err := easytier.PhysicalUnderlayInterface(e.option.IPVersion == C.IPv6Only || e.option.IPVersion == C.IPv6Prefer)
++		if err != nil {
++			return err
++		}
++		if iface != "" {
++			transportDialer = udpspeeder.FECdialer{Dialer: e.option.NewDialer(append(e.DialOptions(), dialer.WithInterface(iface))), Option: *e.option.UDPFEC, Tracker: e.fecTracker}
++			e.mu.Lock()
++			e.underlayInterface = iface
++			e.mu.Unlock()
++		}
++	}
+ 	host, err := corehost.New(e.ctx, corehost.Options{
+-		Platform: easytier.Services(e.dialer),
++		Platform: easytier.Services(transportDialer),
+ 	})
+ 	if err != nil {
+ 		return err
+@@ -344,10 +396,36 @@ func (e *EasyTier) serve() string {
+ 		}
+ 		return "instance stopped"
+ 	}
++	var changes <-chan time.Time
++	var ticker *time.Ticker
++	physical, peers := easytier.StableChange{}, easytier.StableChange{}
++	lastPeerCheck := time.Time{}
++	if e.option.UDPFEC != nil {
++		ticker = time.NewTicker(5 * time.Second)
++		defer ticker.Stop()
++		changes = ticker.C
++		if value, err := easytier.PhysicalUnderlaySignature(); err == nil {
++			physical.Observe(value)
++		}
++		if value, err := e.peerEndpointSignature(); err == nil {
++			peers.Observe(value)
++			lastPeerCheck = time.Now()
++		}
++	}
+ 	for {
+ 		select {
+ 		case <-e.ctx.Done():
+ 			return ""
++		case <-changes:
++			if value, err := easytier.PhysicalUnderlaySignature(); err == nil && physical.Observe(value) {
++				return "physical network address or gateway changed"
++			}
++			if peers.Candidate != "" || time.Since(lastPeerCheck) >= 15*time.Second {
++				lastPeerCheck = time.Now()
++				if value, err := e.peerEndpointSignature(); err == nil && peers.Observe(value) {
++					return "FEC peer domain address changed"
++				}
++			}
+ 		case event, ok := <-events:
+ 			if !ok {
+ 				return "instance stopped"
+@@ -355,6 +433,10 @@ func (e *EasyTier) serve() string {
+ 			switch event.Kind {
+ 			case "peer_added", "peer_removed":
+ 				log.Infoln("[EasyTier](%s) %s: %s", e.Name(), event.Kind, event.Message)
++				if event.Kind == "peer_removed" && e.option.UDPFEC != nil {
++					e.packetLeases.CloseAll()
++					lastPeerCheck = time.Time{}
++				}
+ 			default:
+ 				log.Debugln("[EasyTier](%s) %s: %s", e.Name(), event.Kind, event.Message)
+ 			}
+@@ -362,6 +444,50 @@ func (e *EasyTier) serve() string {
+ 	}
+ }
+ 
++func (e *EasyTier) peerEndpointSignature() (string, error) {
++	ctx, cancel := context.WithTimeout(e.ctx, 3*time.Second)
++	defer cancel()
++	values := []string{}
++	for _, peer := range e.option.Peers {
++		u, err := url.Parse(peer)
++		if err != nil {
++			return "", err
++		}
++		host := u.Hostname()
++		if host == "" {
++			continue
++		}
++		if ip, err := netip.ParseAddr(host); err == nil {
++			values = append(values, u.Scheme+"/"+ip.String()+"/"+u.Port())
++			continue
++		}
++		var ips []netip.Addr
++		if fresh, ok := resolver.ProxyServerHostResolver.(interface {
++			LookupFreshIP(context.Context, string, bool) ([]netip.Addr, error)
++		}); ok {
++			ips, err = fresh.LookupFreshIP(ctx, host, e.option.IPVersion == C.IPv6Only || e.option.IPVersion == C.IPv6Prefer)
++		} else if fresh, ok := resolver.SystemResolver.(interface {
++			LookupFreshIP(context.Context, string, bool) ([]netip.Addr, error)
++		}); ok {
++			ips, err = fresh.LookupFreshIP(ctx, host, e.option.IPVersion == C.IPv6Only || e.option.IPVersion == C.IPv6Prefer)
++		} else {
++			version := uint8(4)
++			if e.option.IPVersion == C.IPv6Only || e.option.IPVersion == C.IPv6Prefer {
++				version = 6
++			}
++			ips, err = (easytier.DNSResolver{}).LookupIP(ctx, platform.DNSQuery{Host: host, IPVersion: version})
++		}
++		if err != nil {
++			return "", err
++		}
++		for _, ip := range ips {
++			values = append(values, u.Scheme+"/"+ip.String()+"/"+u.Port())
++		}
++	}
++	sort.Strings(values)
++	return strings.Join(values, ","), nil
++}
++
+ func (e *EasyTier) overlayNodes(ctx context.Context) ([]easytier.Node, error) {
+ 	instance, err := e.currentInstance()
+ 	if err != nil {
+@@ -457,6 +583,7 @@ func (e *EasyTier) DialContext(ctx context.Context, metadata *C.Metadata) (_ C.C
+ }
+ 
+ func (e *EasyTier) ListenPacketContext(ctx context.Context, metadata *C.Metadata) (_ C.PacketConn, err error) {
++	generation := e.packetLeases.Generation()
+ 	if err = e.ensureStarted(ctx); err != nil {
+ 		return nil, err
+ 	}
+@@ -474,6 +601,13 @@ func (e *EasyTier) ListenPacketContext(ctx context.Context, metadata *C.Metadata
+ 	if pc == nil {
+ 		return nil, errors.New("packetConn is nil")
+ 	}
++	if e.option.UDPFEC != nil {
++		var ok bool
++		pc, ok = e.packetLeases.Track(pc, generation)
++		if !ok {
++			return nil, errors.New("easytier: overlay changed during UDP setup; retry")
++		}
++	}
+ 	return NewPacketConn(pc, e), nil
+ }
+ 
+@@ -526,6 +660,9 @@ func (e *EasyTier) shutdown() error {
+ 	e.instance = nil
+ 	e.host = nil
+ 	e.mu.Unlock()
++	if e.option.UDPFEC != nil {
++		e.packetLeases.CloseAll()
++	}
+ 	var err error
+ 	if instance != nil {
+ 		err = instance.Close(ctx)
+diff --git a/adapter/parser.go b/adapter/parser.go
+index 68bccdb..434027e 100644
+--- a/adapter/parser.go
++++ b/adapter/parser.go
+@@ -216,12 +216,15 @@ func ParseProxy(mapping map[string]any, options ...ProxyOption) (C.Proxy, error)
+ 			break
+ 		}
+ 		proxy, err = outbound.NewZeroTier(*zeroTierOption)
+-	case "easytier":
++	case "easytier", "easytier-fec":
+ 		easyTierOption := &outbound.EasyTierOption{BasicOption: basicOption}
+ 		err = decoder.Decode(mapping, easyTierOption)
+ 		if err != nil {
+ 			break
+ 		}
++		if proxyType == "easytier-fec" && easyTierOption.UDPFEC == nil {
++			return nil, fmt.Errorf("easytier-fec requires udp-fec configuration")
++		}
+ 		proxy, err = outbound.NewEasyTier(*easyTierOption)
+ 	default:
+ 		return nil, fmt.Errorf("unsupport proxy type: %s", proxyType)
+diff --git a/dns/resolver.go b/dns/resolver.go
+index b8742f2..6c66db6 100644
+--- a/dns/resolver.go
++++ b/dns/resolver.go
+@@ -3,6 +3,7 @@ package dns
+ import (
+ 	"context"
+ 	"errors"
++	"fmt"
+ 	"net/netip"
+ 	"time"
+ 
+@@ -396,6 +397,38 @@ func (r *Resolver) ClearCache() {
+ 	}
+ }
+ 
++// LookupFreshIP refreshes only the requested peer domain. It does not clear
++// application DNS caches or modify the resolver's routing policy.
++func (r *Resolver) LookupFreshIP(ctx context.Context, host string, ipv6 bool) ([]netip.Addr, error) {
++	qtype := uint16(D.TypeA)
++	if ipv6 {
++		qtype = D.TypeAAAA
++	}
++	m := &D.Msg{}
++	m.SetQuestion(D.Fqdn(host), qtype)
++	answer, err := r.exchangeWithoutCache(ctx, m)
++	if err != nil {
++		return nil, err
++	}
++	out := []netip.Addr{}
++	for _, rr := range answer.Answer {
++		switch v := rr.(type) {
++		case *D.A:
++			if ip, ok := netip.AddrFromSlice(v.A); ok {
++				out = append(out, ip.Unmap())
++			}
++		case *D.AAAA:
++			if ip, ok := netip.AddrFromSlice(v.AAAA); ok {
++				out = append(out, ip)
++			}
++		}
++	}
++	if len(out) == 0 {
++		return nil, fmt.Errorf("peer domain returned no addresses")
++	}
++	return out, nil
++}
++
+ func (r *Resolver) ResetConnection() {
+ 	if r != nil {
+ 		for _, c := range r.main {
