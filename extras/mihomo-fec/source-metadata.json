@@ -11,7 +11,7 @@
     ".gitattributes": "ca7d91d6acbf7a2294b9d0846aad47e7c455619a3439c2bfb15b1ee813007acc",
     ".gitignore": "1dcec2264568fc4401c96c8d684069f601cbb77c9f795f6e05947f82dce85846",
     "Build-MihomoFEC.ps1": "179f8aed9580b5e8d0a98ad4d4ca8ef1b9edd1db727348faaea3a73190e1455f",
-    "example.yaml": "70dc5ce9196772073ceadc86e0e5a849ce5cffe0d683ed53a6205bceaa87b61b",
+    "example.yaml": "04d893dc30291f07cb2d3eb0e2575096a6224486bf924a375849de842759049c",
     "LICENSE.MIHOMO": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809",
     "mihomo-v1.19.32.patch": "a2bb5b58bd5e435d8359927441841c8fbe4d4e0748d9bfa9312985f3645e7897",
     "overlay/adapter/outbound/easytier_fec_recovery_test.go": "eb9805e4cb7101e84dcee9ed44323ef85a32ccadfd3dd2ba256fc50663b24d72",
@@ -31,7 +31,7 @@
     "overlay/component/udpspeeder/packetconn.go": "d57fd224b00844cbf8da9ee92acf859e145538038ab0c64c1c192d56ac109772",
     "overlay/component/udpspeeder/tracker.go": "2aa8558c30c5ae230f51b2ffcc96d4fd2c262e5a8154f16b2be1ae97c66aa5b8",
     "overlay/dns/recovery_test.go": "63c1393d0fbbc6568a29b7e1ea1344dedbf960bd056e220d38d71bbe1726a0a8",
-    "README.en.md": "0ca6e67ac47d30947a978f0a73ce4f210650b48e4d701a11f86b2df0f4480a1e",
-    "README.md": "bdb89e241f13e81a476308edbb770fee455ba0c69ca193b7a0f362274422c1a5"
+    "README.en.md": "1c0e52b79c1e9c6bcf744a387991b05c1357089772280795729312e97a18060a",
+    "README.md": "f6d8087c727921b4bf2d561655ec459bff253e91014cbf7cb1472f4179c4087d"
   }
 }

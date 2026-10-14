@@ -19,3 +19,11 @@ The complete Chinese instructions are in [README.md](README.md). Preserve [Mihom
 `fec.4` handles persistent overlay `ENETUNREACH` or `ENETRESET` errors from TCP and application UDP operations. After at least two errors lasting ten seconds, and a thirty-second startup grace period, the next five-second check rebuilds only this node. A successful TCP connection or received UDP packet cancels pending recovery. Destination timeouts, refused connections, cancelled callers and results from retired instances do not trigger it. This adds no external probing service.
 
 The local identity survives rebuilding, and old UDP mappings are released. The API exposes `path-route-failures`, `path-restarts` and `last-restart-reason`. These thresholds limit restarts rather than guaranteeing recovery time. Isolated testing covers an interruption with an unchanged peer address, a restored real exit and preserved identity; actual game-session recovery and different hotspots remain separate acceptance items.
+
+## Keep domain fallbacks out of the download path
+
+Process rules alone are insufficient. An unconditional game-domain rule can send TCP login, web components or resource downloads into FEC when process lookup fails. Restrict the domain fallback with `AND,((NETWORK,UDP),(DOMAIN-SUFFIX,...)),Game route`, and send TCP through an authorized ordinary route.
+
+A separate `select` group can let the operator choose the local exit or an ordinary TCP proxy for a resource CDN. Keep it separate from game failover and exclude DIRECT from automatic candidates. Validate actual transferred bytes and the game's update stage; a small HEAD response does not establish that full downloads work.
+
+This extension dials a native EasyTier entry and applies the matching outer UDP FEC format. It does not use Hysteria2 Realm coordination. The IPv6 example requires a reachable IPv6 underlay and server-side address binding/DDNS. Success on a separate Realm profile does not establish IPv4-only hotspot support here.

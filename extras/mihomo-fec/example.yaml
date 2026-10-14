@@ -1,4 +1,4 @@
-# Experimental Windows core v1.19.32-fec.3 is required.
+# Experimental Windows core v1.19.32-fec.4 is required.
 # This template does not install or configure an exit server.
 mixed-port: 7897
 allow-lan: false
@@ -53,12 +53,20 @@ proxies:
       mtu: 1250
       ports: [11022]
 proxy-groups:
+  - name: Resource downloads (manual)
+    type: select
+    # A fixed manual resource policy, not an automatic fallback to DIRECT.
+    # Add an authorized ordinary TCP proxy here when the local CDN is blocked.
+    proxies: [DIRECT]
   - name: Game route
     type: select
     proxies: [Direct regional exit with FEC, DIRECT]
 rules:
+  - AND,((NETWORK,TCP),(DOMAIN-SUFFIX,autopatchcn.bhsr.com)),Resource downloads (manual)
   - AND,((PROCESS-NAME,HTGame.exe),(NETWORK,UDP)),Game route
   - AND,((PROCESS-NAME,StarRail.exe),(NETWORK,UDP)),Game route
+  # A domain fallback must also restrict FEC to UDP when process lookup fails.
+  - AND,((NETWORK,UDP),(DOMAIN-SUFFIX,bhsr.com)),Game route
   # Keep resource downloads/TCP outside high-redundancy FEC. Add your own
   # authorized normal TCP proxy rules here when direct login is unavailable.
   - MATCH,DIRECT
