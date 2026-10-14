@@ -1,5 +1,5 @@
 diff --git a/adapter/outbound/easytier.go b/adapter/outbound/easytier.go
-index b42fc23..a06463c 100644
+index b42fc23..cde8c7a 100644
 --- a/adapter/outbound/easytier.go
 +++ b/adapter/outbound/easytier.go
 @@ -4,23 +4,29 @@ package outbound
@@ -32,7 +32,7 @@ index b42fc23..a06463c 100644
  	D "github.com/miekg/dns"
  )
  
-@@ -36,56 +42,60 @@ var errEasyTierClosed = errors.New("easytier outbound closed")
+@@ -36,56 +42,63 @@ var errEasyTierClosed = errors.New("easytier outbound closed")
  
  type EasyTier struct {
  	*Base
@@ -69,6 +69,9 @@ index b42fc23..a06463c 100644
 +	unregister        func()
 +	underlayInterface string
 +	packetLeases      easytier.PacketLeases
++	pathRecovery      easytier.PathRecovery
++	pathRestarts      uint64
++	lastRestartReason string
  }
  
  type EasyTierOption struct {
@@ -139,7 +142,7 @@ index b42fc23..a06463c 100644
  }
  
  func (o EasyTierOption) structuredConfig() easytier.Config {
-@@ -126,6 +136,11 @@ func (o EasyTierOption) structuredConfig() easytier.Config {
+@@ -126,6 +139,11 @@ func (o EasyTierOption) structuredConfig() easytier.Config {
  }
  
  func NewEasyTier(option EasyTierOption) (*EasyTier, error) {
@@ -151,7 +154,7 @@ index b42fc23..a06463c 100644
  	configTOML, err := option.structuredConfig().RenderTOML()
  	if err != nil {
  		return nil, err
-@@ -165,10 +180,34 @@ func NewEasyTier(option EasyTierOption) (*EasyTier, error) {
+@@ -165,10 +183,37 @@ func NewEasyTier(option EasyTierOption) (*EasyTier, error) {
  		cancel:     cancel,
  	}
  	outbound.dialer = option.NewDialer(outbound.DialOptions())
@@ -178,6 +181,9 @@ index b42fc23..a06463c 100644
 +	info["udp-fec"] = map[string]any{"enabled": true, "mode": 0, "data_shards": e.option.UDPFEC.DataShards, "parity_shards": e.option.UDPFEC.ParityShards, "timeout_ms": e.option.UDPFEC.Timeout, "interval_ms": e.option.UDPFEC.Interval, "stats": e.fecTracker.Snapshot()}
 +	e.mu.Lock()
 +	info["physical-interface"] = e.underlayInterface
++	info["path-route-failures"] = e.pathRecovery.Failures()
++	info["path-restarts"] = e.pathRestarts
++	info["last-restart-reason"] = e.lastRestartReason
 +	e.mu.Unlock()
 +	info["recovery-generation"] = e.packetLeases.Generation()
 +	return json.Marshal(info)
@@ -186,7 +192,20 @@ index b42fc23..a06463c 100644
  func (e *EasyTier) ensureStarted(ctx context.Context) error {
  	e.loopOnce.Do(func() {
  		go e.loop()
-@@ -290,8 +329,21 @@ func (e *EasyTier) init() error {
+@@ -251,6 +296,12 @@ func (e *EasyTier) loop() {
+ 		backoff = easyTierMinBackoff
+ 		e.signalReady()
+ 		reason := e.serve()
++		e.mu.Lock()
++		e.lastRestartReason = reason
++		if reason == "persistent overlay route unavailable" {
++			e.pathRestarts++
++		}
++		e.mu.Unlock()
+ 		_ = e.shutdown()
+ 		if e.ctx.Err() != nil {
+ 			return
+@@ -290,8 +341,21 @@ func (e *EasyTier) init() error {
  	if instanceName == "" {
  		instanceName = e.option.Name
  	}
@@ -209,7 +228,15 @@ index b42fc23..a06463c 100644
  	})
  	if err != nil {
  		return err
-@@ -344,10 +396,36 @@ func (e *EasyTier) serve() string {
+@@ -307,6 +371,7 @@ func (e *EasyTier) init() error {
+ 	e.mu.Lock()
+ 	e.instance = instance
+ 	e.instanceID = instance.ID()
++	e.pathRecovery.Reset(time.Now())
+ 	e.mu.Unlock()
+ 	if err := writeInstanceID(e.stateDir, instance.ID()); err != nil {
+ 		return err
+@@ -344,10 +409,42 @@ func (e *EasyTier) serve() string {
  		}
  		return "instance stopped"
  	}
@@ -234,6 +261,12 @@ index b42fc23..a06463c 100644
  		case <-e.ctx.Done():
  			return ""
 +		case <-changes:
++			e.mu.Lock()
++			pathBroken := e.instance == instance && e.pathRecovery.Due(time.Now())
++			e.mu.Unlock()
++			if pathBroken {
++				return "persistent overlay route unavailable"
++			}
 +			if value, err := easytier.PhysicalUnderlaySignature(); err == nil && physical.Observe(value) {
 +				return "physical network address or gateway changed"
 +			}
@@ -246,7 +279,7 @@ index b42fc23..a06463c 100644
  		case event, ok := <-events:
  			if !ok {
  				return "instance stopped"
-@@ -355,6 +433,10 @@ func (e *EasyTier) serve() string {
+@@ -355,6 +452,10 @@ func (e *EasyTier) serve() string {
  			switch event.Kind {
  			case "peer_added", "peer_removed":
  				log.Infoln("[EasyTier](%s) %s: %s", e.Name(), event.Kind, event.Message)
@@ -257,7 +290,7 @@ index b42fc23..a06463c 100644
  			default:
  				log.Debugln("[EasyTier](%s) %s: %s", e.Name(), event.Kind, event.Message)
  			}
-@@ -362,6 +444,50 @@ func (e *EasyTier) serve() string {
+@@ -362,6 +463,50 @@ func (e *EasyTier) serve() string {
  	}
  }
  
@@ -308,7 +341,15 @@ index b42fc23..a06463c 100644
  func (e *EasyTier) overlayNodes(ctx context.Context) ([]easytier.Node, error) {
  	instance, err := e.currentInstance()
  	if err != nil {
-@@ -457,6 +583,7 @@ func (e *EasyTier) DialContext(ctx context.Context, metadata *C.Metadata) (_ C.C
+@@ -447,6 +592,7 @@ func (e *EasyTier) DialContext(ctx context.Context, metadata *C.Metadata) (_ C.C
+ 	}
+ 	address := net.JoinHostPort(ip.String(), fmt.Sprintf("%d", metadata.DstPort))
+ 	conn, err := instance.Dial(ctx, "tcp4", address)
++	e.observePathResult(instance, err)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -457,6 +603,7 @@ func (e *EasyTier) DialContext(ctx context.Context, metadata *C.Metadata) (_ C.C
  }
  
  func (e *EasyTier) ListenPacketContext(ctx context.Context, metadata *C.Metadata) (_ C.PacketConn, err error) {
@@ -316,11 +357,18 @@ index b42fc23..a06463c 100644
  	if err = e.ensureStarted(ctx); err != nil {
  		return nil, err
  	}
-@@ -474,6 +601,13 @@ func (e *EasyTier) ListenPacketContext(ctx context.Context, metadata *C.Metadata
+@@ -469,14 +616,54 @@ func (e *EasyTier) ListenPacketContext(ctx context.Context, metadata *C.Metadata
+ 	}
+ 	pc, err := instance.ListenPacket("udp4", ":0")
+ 	if err != nil {
++		e.observePathResult(instance, err)
+ 		return nil, err
+ 	}
  	if pc == nil {
  		return nil, errors.New("packetConn is nil")
  	}
 +	if e.option.UDPFEC != nil {
++		pc = &easyTierPathPacket{PacketConn: pc, observe: func(err error) { e.observePathResult(instance, err) }}
 +		var ok bool
 +		pc, ok = e.packetLeases.Track(pc, generation)
 +		if !ok {
@@ -330,7 +378,41 @@ index b42fc23..a06463c 100644
  	return NewPacketConn(pc, e), nil
  }
  
-@@ -526,6 +660,9 @@ func (e *EasyTier) shutdown() error {
++func (e *EasyTier) observePathResult(instance *corehost.Instance, err error) {
++	if e.option.UDPFEC == nil {
++		return
++	}
++	e.mu.Lock()
++	defer e.mu.Unlock()
++	if e.instance == instance {
++		e.pathRecovery.Observe(time.Now(), err)
++	}
++}
++
++type easyTierPathPacket struct {
++	net.PacketConn
++	observe func(error)
++}
++
++func (p *easyTierPathPacket) WriteTo(b []byte, addr net.Addr) (int, error) {
++	n, err := p.PacketConn.WriteTo(b, addr)
++	// A successful enqueue does not prove that the overlay can receive.
++	if err != nil {
++		p.observe(err)
++	}
++	return n, err
++}
++
++func (p *easyTierPathPacket) ReadFrom(b []byte) (int, net.Addr, error) {
++	n, addr, err := p.PacketConn.ReadFrom(b)
++	p.observe(err)
++	return n, addr, err
++}
++
+ func (e *EasyTier) ResolveUDP(ctx context.Context, metadata *C.Metadata) error {
+ 	if metadata.Host != "" {
+ 		ip, err := e.resolveIPv4(ctx, metadata.Host)
+@@ -526,6 +713,9 @@ func (e *EasyTier) shutdown() error {
  	e.instance = nil
  	e.host = nil
  	e.mu.Unlock()

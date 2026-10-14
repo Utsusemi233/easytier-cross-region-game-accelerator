@@ -5,17 +5,20 @@
   "go_version_used": "go1.27.2 windows/amd64",
   "goamd64": "v1",
   "build_tag": "with_gvisor",
-  "extension_version": "v1.19.32-fec.3",
+  "extension_version": "v1.19.32-fec.4",
   "scope": "Experimental Windows in-core UDPspeeder V2 mode0 with automatic physical uplink and generation-scoped application UDP sockets",
   "source_files_sha256": {
     ".gitattributes": "ca7d91d6acbf7a2294b9d0846aad47e7c455619a3439c2bfb15b1ee813007acc",
     ".gitignore": "1dcec2264568fc4401c96c8d684069f601cbb77c9f795f6e05947f82dce85846",
-    "Build-MihomoFEC.ps1": "0d1d1cdb47e2844f2a90d65808c079112c01acf3f25c5d5fb1fc9cc1593c0b9f",
+    "Build-MihomoFEC.ps1": "179f8aed9580b5e8d0a98ad4d4ca8ef1b9edd1db727348faaea3a73190e1455f",
     "example.yaml": "70dc5ce9196772073ceadc86e0e5a849ce5cffe0d683ed53a6205bceaa87b61b",
     "LICENSE.MIHOMO": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809",
-    "mihomo-v1.19.32.patch": "79015930da972cbe46bab4f855bfc3b8588f0c0cbb61ba78be0c77d45f891103",
+    "mihomo-v1.19.32.patch": "a2bb5b58bd5e435d8359927441841c8fbe4d4e0748d9bfa9312985f3645e7897",
+    "overlay/adapter/outbound/easytier_fec_recovery_test.go": "eb9805e4cb7101e84dcee9ed44323ef85a32ccadfd3dd2ba256fc50663b24d72",
     "overlay/component/easytier/packet_leases.go": "7071b821da1a8022f34cc816bc4b0e45b6924db698e67a8bb48e4ecb2e90fa4a",
     "overlay/component/easytier/packet_leases_test.go": "c7cabd26c85ab32d7d2021424586a50fa56de96b10a8a6315222f78a60bdfd3f",
+    "overlay/component/easytier/path_recovery.go": "dc7831b670747e4714569eff6cccc18d507fcfe55c8a63802924d45ceff9063a",
+    "overlay/component/easytier/path_recovery_test.go": "1af820003eb9b2554b4193bbcabbf8a81daa6060201356c0ae836a5fae797e4d",
     "overlay/component/easytier/physical_windows.go": "964af38c68bc8ceacf5db9b183b22f61d0db82a17b9fe23552df1e232643368a",
     "overlay/component/easytier/physical_windows_test.go": "8263e967347424dd648a80a439d4194931a89863222626b777eeca376d6b0978",
     "overlay/component/easytier/recovery.go": "006a0e56bb345ebea03ee88481234de2acbc02088af38419300c1bd078cf995b",
@@ -28,7 +31,7 @@
     "overlay/component/udpspeeder/packetconn.go": "d57fd224b00844cbf8da9ee92acf859e145538038ab0c64c1c192d56ac109772",
     "overlay/component/udpspeeder/tracker.go": "2aa8558c30c5ae230f51b2ffcc96d4fd2c262e5a8154f16b2be1ae97c66aa5b8",
     "overlay/dns/recovery_test.go": "63c1393d0fbbc6568a29b7e1ea1344dedbf960bd056e220d38d71bbe1726a0a8",
-    "README.en.md": "2bec7a3f270d53d68cb908fbb3dd1645253582c2363f4bbb8efa97282bce148b",
-    "README.md": "c8e996300c24436fdecb84aa8fa4ed73a83df1ba18e115a7d8c9c08dbefca35b"
+    "README.en.md": "0ca6e67ac47d30947a978f0a73ce4f210650b48e4d701a11f86b2df0f4480a1e",
+    "README.md": "bdb89e241f13e81a476308edbb770fee455ba0c69ca193b7a0f362274422c1a5"
   }
 }

@@ -34,7 +34,7 @@ Push-Location $taskSource
 try{
  & $Go test ./component/udpspeeder ./component/easytier ./dns ./adapter/outbound
  if($LASTEXITCODE -ne 0){throw 'Targeted tests failed'}
- & $Go build -tags with_gvisor -trimpath -ldflags '-X github.com/metacubex/mihomo/constant.Version=v1.19.32-fec.3 -s -w' -o (Join-Path $taskRoot 'mihomo-fec.exe') .
+ & $Go build -tags with_gvisor -trimpath -ldflags '-X github.com/metacubex/mihomo/constant.Version=v1.19.32-fec.4 -s -w' -o (Join-Path $taskRoot 'mihomo-fec.exe') .
  if($LASTEXITCODE -ne 0){throw 'Build failed'}
 }finally{Pop-Location}
 Get-FileHash -LiteralPath (Join-Path $taskRoot 'mihomo-fec.exe') -Algorithm SHA256
